@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 50px;
+}
+
+.PanelClient {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  margin: 0 auto;
+  /*display: flex;
+  flex-wrap: wrap;*/
+  background-color: rgb(244, 244, 244);
+}
+
+.Tile {
+  position: absolute;
+  width: 50px;
+  height: 50px;  
+  text-align: center;
+  line-height: 40px; 
+  user-select: none;
+
+  /*padding: 5px;*/  
+  border: 4px solid #E55555;
+  border-radius: 4px;
+  background: linear-gradient(145deg, bisque 35%, #ABE024 90%);
+  transition: .2s;
+
+}
+
+
+</style>
+</head>
+<body>
+
+
+
+<script>
+
+let PanelClient = document.createElement('div');
+document.body.appendChild(PanelClient);
+PanelClient.classList.add('PanelClient');
+
+let Tiles = [];
+let TileSize;
+let TileSpacing;
+let SpaceX, SpaceY;
+let Base = 4;
+let slowdown = 1.0;
+const MaxMoveAniDuration = 150;
+const MinMoveAniDuration = 1;
+
+
+function CreateTiles( )
+{
+
+
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+      {
+        let GradientAni = Tiles[i].getAttribute('TextNumber') ;
+        delete GradientAni;
+
+        Tiles[i].remove();
+        Tiles[i] = undefined;
+      }
+
+  Tiles.length = (Base * Base);
+  for ( let i = 0; i < Tiles.length - 1; i++)
+  {
+    if ( Tiles[i] == undefined )
+    {
+      let NewTile = document.createElement('div');
+
+      NewTile.innerHTML = i;
+      NewTile.setAttribute('TextNumber', i);
+
+      NewTile.classList.add('Tile');
+
+      NewTile.onclick = function() {TileOnClick(this)};
+
+
+      let GradientAni = new TGradientAnimation(NewTile);
+      NewTile.setAttribute('TextNumber', GradientAni);
+
+
+      PanelClient.appendChild(NewTile);
+//      NewTile.SendToBack;
+      Tiles[i] = NewTile;
+    }
+
+    // if ( Tiles[i] != undefined )
+    // {
+    //   let GradientAni = Tiles[i].getAttribute('TextNumber') ;
+    //   GradientAni.StartColor1 = TileFillNormalColor1;
+    //   GradientAni.StartColor2 = TileFillNormalColor2;
+    //   GradientAni.FirstStart = true;
+    // }
+  }
+
+  if ( Tiles[Tiles.length - 1] != undefined )
+    Tiles[Tiles.length - 1] = undefined;
+}
+
+CreateTiles( );
+AnimatePlaceTilesFast( );
+
+
+function  ind( Row, Col )
+{
+    return Row * Base + Col;
+}
+
+function ActualPosition(ATile)
+{
+    for ( let i = 0; i < Tiles.length; i++)
+        if (Tiles[i] == ATile)
+            return i;
+    return 0;
+}
+
+function TileOnClick(SenderTile) {
+  // //let i = SenderTile.getAttribute('TextNumber');
+  // //let top = Math.trunc(i/4) * 60;
+  // let top = parseInt(SenderTile.style.top);
+  // // SenderTile.style.top = (top+10) + "px";
+
+  // SenderTile.style["top"] = (top+10) + "px";
+
+  TryMoveTile( ActualPosition(SenderTile), MaxMoveAniDuration, false );
+
+};
+
+function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
+{
+  let WasMoved = false;
+
+  let ColPressed = (TilePosition % Base);
+  let RowPressed = Math.trunc(TilePosition / Base);
+
+
+  for ( let Row = 0; Row < Base; Row++)
+    if ( Tiles[ind( Row, ColPressed )] == undefined )
+    {
+      let RowNoTile = Row;
+      if ( RowNoTile > RowPressed )
+        for ( let RowToMove = RowNoTile - 1; RowToMove >= RowPressed; RowToMove--)
+        {
+          let NewPosition = ind( RowToMove + 1, ColPressed );
+          Tiles[NewPosition] = Tiles[ind( RowToMove, ColPressed )];
+          Tiles[ind( RowToMove, ColPressed )] = undefined;
+          AnimateMoveTile( Tiles[NewPosition], MoveAniDuration, WaitAnimationEnd );
+          WasMoved = true;
+        }
+      if ( RowPressed > RowNoTile )
+        for ( let RowToMove = RowNoTile + 1; RowToMove <= RowPressed; RowToMove++)
+        {
+          let NewPosition = ind( RowToMove - 1, ColPressed );
+          Tiles[NewPosition] = Tiles[ind( RowToMove, ColPressed )];
+          Tiles[ind( RowToMove, ColPressed )] = undefined;
+          AnimateMoveTile( Tiles[NewPosition], MoveAniDuration, WaitAnimationEnd );
+          WasMoved = true;
+        }
+    }
+  if ( ! WasMoved )
+    for ( let Col = 0; Col < Base; Col++)
+      if ( Tiles[ind( RowPressed, Col )] == undefined )
+      {
+        let ColNoTile = Col;
+        if ( ColNoTile > ColPressed )
+          for ( let ColToMove = ColNoTile - 1; ColToMove >= ColPressed; ColToMove--)
+          {
+            let NewPosition = ind( RowPressed, ColToMove + 1 );
+            Tiles[NewPosition] = Tiles[ind( RowPressed, ColToMove )];
+            Tiles[ind( RowPressed, ColToMove )] = undefined;
+            AnimateMoveTile( Tiles[NewPosition], MoveAniDuration, WaitAnimationEnd );
+            WasMoved = true;
+          }
+        if ( ColPressed > ColNoTile )
+          for ( let ColToMove = ColNoTile + 1; ColToMove <= ColPressed; ColToMove++)
+          {
+            let NewPosition = ind( RowPressed, ColToMove - 1 );
+            Tiles[NewPosition] = Tiles[ind( RowPressed, ColToMove )];
+            Tiles[ind( RowPressed, ColToMove )] = undefined;
+            AnimateMoveTile( Tiles[NewPosition], MoveAniDuration, WaitAnimationEnd );
+            WasMoved = true;
+          }
+      }
+
+  return WasMoved;
+}
+
+
+function  AnimateMoveTile( ATile, MoveAniDuration, WaitAnimationEnd )
+{
+  let ActPos = ActualPosition(ATile);
+  let NewCol = (ActPos % Base);
+  let NewRow = Math.trunc(ActPos / Base);
+
+  let X = SpaceX + Math.round( NewCol * ( TileSize + TileSpacing ) );
+  let Y = SpaceY + Math.round( NewRow * ( TileSize + TileSpacing ) );
+
+
+  if ( MoveAniDuration > 0 )
+  {
+    AnimatePropertyDelay(ATile, "left", X, MoveAniDuration, 0, "OutExpo" );
+
+    AnimatePropertyDelay(ATile, "top", Y, MoveAniDuration, 0, "OutExpo", true, WaitAnimationEnd );
+  }
+  else {
+    ATile.style.left = X + "px";
+    ATile.style.top = Y + "px";
+  }
+}
+//-------------------------------   Animations   -----------------------------
+
+function CalcConsts( )
+{
+  let Height = parseInt(PanelClient.clientHeight);
+  let Width = parseInt(PanelClient.clientWidth);
+
+  if ( Height > Width )
+  {
+    SpaceX = Math.round( ( Width ) / 20 );
+    TileSize = Math.round( ( ( Width - SpaceX * 2 ) ) / Base );
+    SpaceY = SpaceX + Math.round( ( ( Height - Width ) ) / 2 );
+  }
+  else
+  {
+    SpaceY = Math.round( ( Height ) / 20 );
+    TileSize = Math.round( ( ( Height - SpaceY * 2 ) ) / Base );
+    SpaceX = SpaceY + Math.round( ( ( Width - Height ) ) / 2 );
+  }
+  TileSpacing = Math.round( TileSize * 0.06 );
+  TileSize = Math.round( TileSize * 0.94 );
+  SpaceX = SpaceX + Math.round( ( TileSpacing ) / 2 );
+  SpaceY = SpaceY + Math.round( ( TileSpacing ) / 2 );
+}
+
+
+
+function AnimatePlaceTilesFast( )
+{
+  CalcConsts();
+//  for (TRectangle CurTile : Tiles)
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+
+      let ScaleX = ( TileSize ) / Tiles[i].offsetWidth;
+      let ScaleY = ( TileSize ) / Tiles[i].offsetHeight;
+      AnimatePropertyDelay( Tiles[i], "scaleX", ScaleX, 0.2 * slowdown, ( 0.2 + 0.03 * i ) * slowdown );
+      // AnimatePropertyDelay( Tiles[i], "scaleY", ScaleY, 0.2 * slowdown, ( 0.1 + 0.03 * i ) * slowdown );
+
+      let Col = (i % Base);
+      let Row = Math.trunc(i / Base);
+
+      let X = SpaceX + Math.round( Col * ( Tiles[i].offsetWidth * ScaleX + TileSpacing ) );
+      let Y = SpaceY + Math.round( Row * ( Tiles[i].offsetHeight * ScaleY + TileSpacing ) );
+      // Tiles[i].Tag = i;
+      AnimatePropertyDelay( Tiles[i], "left", X, 0.2 * slowdown, ( 0 + 0.03 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "top", Y, 0.1 * slowdown, ( 0 + 0.03 * i ) * slowdown );
+      /*, TAnimationType.atIn, TInterpolationType.Back*/
+
+    }
+}
+
+
+
+//console.log(Tiles);
+
+function AnimatePropertyDelay(Target, PropertyName,
+                  Value, Duration_ms, Delay_ms,
+                 AInterpolation, DeleteWhenStopped, WaitAnimationEnd)
+{
+  let postfix = ""; 
+  if ((PropertyName == "left") || (PropertyName == "top"))
+  {
+    postfix = "px";
+
+    Target.style[PropertyName] = Value + postfix;
+  } else if (PropertyName == "scaleX") {
+    Target.style["transform"] = "scale(" + Value + ")";
+  }
+}  
+
+function TGradientAnimation( )
+{
+  
+}
+
+</script>
+
+</body>
+</html>
