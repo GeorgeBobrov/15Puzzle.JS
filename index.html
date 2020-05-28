@@ -7,12 +7,14 @@
 }
 
 body {
-  margin: 50px;
+  margin: 0px;
+  user-select: none;
 }
+
 
 .PanelClient {
   position: relative;
-  width: 500px;
+  width: 100%;
   height: 500px;
   margin: 0 auto;
   /*display: flex;
@@ -24,8 +26,9 @@ body {
   position: absolute;
   width: 50px;
   height: 50px;  
+  font-size: 17px;
   text-align: center;
-  line-height: 40px; 
+  line-height: 42px; 
   user-select: none;
 
   /*padding: 5px;*/  
@@ -35,28 +38,77 @@ body {
   transition: .2s;
 
 }
+.PanelMenu {
+  width: 500px;
+  height: 50px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /*align-content: space-around; */ 
+  background-color: rgb(228, 228, 228);  
+}  
 
+#TextTime {
+  height: 70%;
+  margin: 5px;
+  padding: 0px 5px;
+  background-color: rgb(244, 244, 244);
+  border: 1px solid rgb(85, 123, 229);
+}
+
+.MenuButton {
+  height: 70%;
+  padding: 0px 5px;
+  text-align: center;
+  line-height: 70%;   
+}
 
 </style>
 </head>
 <body>
 
-
+  <div class="PanelMenu">
+    <div id="TextTime">TextTime</div>
+    <button class="MenuButton ButtonShuffle" onclick="ButtonShuffleClick(this)">Shuffle</button> 
+    <button class="MenuButton ButtonMenu" onclick="AnimateTimeRunningOut(this)">TimeRunningOut</button>
+    <button class="MenuButton ButtonMenu" onclick="AnimateTimeOver(this)">TimeOver</button>
+  </div>
+  
 
 <script>
 
 let PanelClient = document.createElement('div');
 document.body.appendChild(PanelClient);
 PanelClient.classList.add('PanelClient');
+window.onresize = PanelClientResize;
+
+
+let TextTime = document.getElementById('TextTime');
+// let TextTimeStyle = window.getComputedStyle(TextTime, null);
+TextTime.style.lineHeight = (parseInt(TextTime.clientHeight)) + "px";
+TextTime.style.fontSize = Math.trunc(parseInt(TextTime.offsetHeight) / 2) + "px";
 
 let Tiles = [];
 let TileSize;
 let TileSpacing;
 let SpaceX, SpaceY;
 let Base = 4;
+
+const TMode = Object.freeze({"Game":1, "GameOver":2, "JustShuffled":3, "PuzzleMatched":4});
+let Mode;
+            
 let slowdown = 1.0;
 const MaxMoveAniDuration = 150;
 const MinMoveAniDuration = 1;
+const TileFillNormalColor1 = 'bisque';
+const TileFillNormalColor2 = '#ABE024';
+
+let LastResizeTime = Date.now();
+let TimeRemaining;
+
+let TimerTime;
+let TimerResize;
 
 
 function CreateTiles( )
@@ -80,30 +132,28 @@ function CreateTiles( )
     {
       let NewTile = document.createElement('div');
 
-      NewTile.innerHTML = i;
+      NewTile.innerHTML = i + 1;
       NewTile.setAttribute('TextNumber', i);
 
       NewTile.classList.add('Tile');
 
-      NewTile.onclick = function() {TileOnClick(this)};
+      NewTile.onmousedown = function() {TileOnClick(this)};
 
 
-      let GradientAni = new TGradientAnimation(NewTile);
-      NewTile.setAttribute('TextNumber', GradientAni);
+      // let GradientAni = new TGradientAnimation(NewTile);
+      // NewTile.setAttribute('GradientAni', GradientAni);
 
 
       PanelClient.appendChild(NewTile);
 //      NewTile.SendToBack;
       Tiles[i] = NewTile;
-    }
 
-    // if ( Tiles[i] != undefined )
-    // {
-    //   let GradientAni = Tiles[i].getAttribute('TextNumber') ;
+    //   let GradientAni = Tiles[i].getAttribute('GradientAni') ;
     //   GradientAni.StartColor1 = TileFillNormalColor1;
     //   GradientAni.StartColor2 = TileFillNormalColor2;
-    //   GradientAni.FirstStart = true;
-    // }
+
+    }
+
   }
 
   if ( Tiles[Tiles.length - 1] != undefined )
@@ -112,6 +162,17 @@ function CreateTiles( )
 
 CreateTiles( );
 AnimatePlaceTilesFast( );
+
+function  SetMode( Value )
+{
+	Mode = Value;
+	if ( Mode == TMode.Game )
+		TimerTime = setInterval(TimerTimeTimer, 1000);
+	else
+    clearInterval(TimerTime)
+
+}
+
 
 
 function  ind( Row, Col )
@@ -134,9 +195,12 @@ function TileOnClick(SenderTile) {
   // // SenderTile.style.top = (top+10) + "px";
 
   // SenderTile.style["top"] = (top+10) + "px";
+	if ( Mode == TMode.JustShuffled )
+		SetMode(TMode.Game);
 
-  TryMoveTile( ActualPosition(SenderTile), MaxMoveAniDuration, false );
-
+  let WasMoved = TryMoveTile( ActualPosition(SenderTile), MaxMoveAniDuration, false );
+	if ( WasMoved )
+		CheckPuzzleMatched();
 };
 
 function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
@@ -205,8 +269,11 @@ function  AnimateMoveTile( ATile, MoveAniDuration, WaitAnimationEnd )
   let NewCol = (ActPos % Base);
   let NewRow = Math.trunc(ActPos / Base);
 
-  let X = SpaceX + Math.round( NewCol * ( TileSize + TileSpacing ) );
-  let Y = SpaceY + Math.round( NewRow * ( TileSize + TileSpacing ) );
+  let OffsetOnScaledTile = (TileSize - ATile.offsetWidth) / 2;
+ 
+
+  let X = SpaceX + Math.round( NewCol * ( TileSize + TileSpacing ) + OffsetOnScaledTile);
+  let Y = SpaceY + Math.round( NewRow * ( TileSize + TileSpacing ) + OffsetOnScaledTile);
 
 
   if ( MoveAniDuration > 0 )
@@ -220,6 +287,142 @@ function  AnimateMoveTile( ATile, MoveAniDuration, WaitAnimationEnd )
     ATile.style.top = Y + "px";
   }
 }
+
+function CheckPuzzleMatched( )
+{
+	let LPuzzleMatched = true;
+	for ( let i = 0; i < Tiles.length; i++)
+		if ( Tiles[i] != undefined )
+		{
+			let TextNumber = Tiles[i].innerHTML;
+
+			if ( (TextNumber - 1) != ActualPosition(Tiles[i]) )
+			{
+				LPuzzleMatched = false;
+				break;
+			}
+		}
+
+	if ( LPuzzleMatched && ( Mode == TMode.Game ) )
+	{
+		SetMode(TMode.PuzzleMatched);
+		AnimatePuzzleMatched();
+	}
+	if ( ( ! LPuzzleMatched ) && ( ( Mode == TMode.PuzzleMatched ) || ( Mode == TMode.JustShuffled ) ) )
+	{
+		AnimateNormalizeTilesColor();
+		if ( Mode == TMode.PuzzleMatched )
+			SetMode(TMode.GameOver);
+	}
+}
+
+
+
+function ButtonShuffleClick()
+{
+	AnimateNormalizeTilesColor();
+
+	let NewI = 0;
+	let MoveCount = Tiles.length * Tiles.length;
+	let MoveAniDuration = MaxMoveAniDuration;
+	for ( let i = 1; i <= MoveCount; i++)
+	{
+		if ( i <= 10 )
+			MoveAniDuration = MinMoveAniDuration + ( MaxMoveAniDuration * ( 1 - (  i  / 10 ) ) );
+		if ( i >= MoveCount - 10 )
+			MoveAniDuration = MinMoveAniDuration + ( ( MaxMoveAniDuration / 2 ) * ( 1 - (  ( MoveCount - i )  / 10 ) ) );
+		if ( ( i > 20 ) && ( i < MoveCount - 20 ) )
+			if ( ( i % 10 ) == 0 )
+				MoveAniDuration = MinMoveAniDuration;
+			else
+				MoveAniDuration = 0;
+		do
+		{
+			NewI = Math.trunc(Math.random() * Tiles.length);
+		}
+		while ( ! ( TryMoveTile( NewI, MoveAniDuration, /*WaitAnimationEnd*/true ) ) );
+	}
+	SetMaxTime();
+//  StopBlinkShuffle();
+
+	SetMode(TMode.JustShuffled);
+	CheckPuzzleMatched();
+}
+
+
+function TimerTimeTimer()
+{
+	TimeRemaining = TimeRemaining - 1;
+
+  let Sec = (TimeRemaining % 60);
+  let Min = Math.trunc(TimeRemaining / 60);
+
+	TextTime.innerHTML = Min + ":" + String(Sec).padStart(2, '0');
+
+	if ( TimeRemaining == 0 )
+	{
+		SetMode(TMode.GameOver);
+		AnimateTimeOver();
+//		StartBlinkShuffle();
+		return;
+	}
+	if ( TimeRemaining <= 10 )
+		AnimateTimeRunningOut();
+
+}
+
+
+function SetMaxTime( )
+{
+	TimeRemaining = Math.trunc( ( Base * Base * Base * Base ) / 20 ) * 10;
+
+  let Sec = (TimeRemaining % 60);
+  let Min = Math.trunc(TimeRemaining / 60);
+
+	TextTime.innerHTML = Min + ":" + String(Sec).padStart(2, '0');
+}
+
+
+function PanelClientResize()
+{
+    clearTimeout(TimerResize);
+		TimerResize = setTimeout(TimerResizeTimer, 200);
+}
+
+
+
+function TimerResizeTimer()
+{
+	// clearTimeout(TimerResize);
+	let TimeFromLastResize_ms = Date.now() - LastResizeTime;
+
+//	qDebug() << QString("TimerResizeTimer	") << QDateTime.currentDateTime().toString("mm:ss:zzz");
+
+	if ( TimeFromLastResize_ms > 1000 )
+	{
+//			qDebug() << QString("AnimatePlaceTilesFast	") << TimeFromLastResize_ms;
+    // PanelClient.style.width = window.width;
+    let newHeight = parseInt(window.innerHeight) - 50;
+    PanelClient.style.height = newHeight + "px";
+
+
+		AnimatePlaceTilesFast();
+		LastResizeTime = Date.now();
+	}
+
+}
+
+function closeEvent(event)
+{
+	qDebug() << QString("closeEvent  ") << QDateTime.currentDateTime().toString("mm:ss:zzz");
+	if ( ! ClosingAnimation )
+	{
+		AnimateTilesDisappeare();
+		ClosingAnimation = true;
+	}
+
+}
+
 //-------------------------------   Animations   -----------------------------
 
 function CalcConsts( )
@@ -257,22 +460,158 @@ function AnimatePlaceTilesFast( )
 
       let ScaleX = ( TileSize ) / Tiles[i].offsetWidth;
       let ScaleY = ( TileSize ) / Tiles[i].offsetHeight;
-      AnimatePropertyDelay( Tiles[i], "scaleX", ScaleX, 0.2 * slowdown, ( 0.2 + 0.03 * i ) * slowdown );
-      // AnimatePropertyDelay( Tiles[i], "scaleY", ScaleY, 0.2 * slowdown, ( 0.1 + 0.03 * i ) * slowdown );
+
+      let OffsetOnScaledTile = (TileSize - Tiles[i].offsetWidth) / 2;
+
+      AnimatePropertyDelay( Tiles[i], "scaleX", ScaleX, 200 * slowdown, ( 200 + 30 * i ) * slowdown );
+      // AnimatePropertyDelay( Tiles[i], "scaleY", ScaleY, 200 * slowdown, ( 100 + 30 * i ) * slowdown );
 
       let Col = (i % Base);
       let Row = Math.trunc(i / Base);
 
-      let X = SpaceX + Math.round( Col * ( Tiles[i].offsetWidth * ScaleX + TileSpacing ) );
-      let Y = SpaceY + Math.round( Row * ( Tiles[i].offsetHeight * ScaleY + TileSpacing ) );
+      let X = SpaceX + Math.round( Col * ( Tiles[i].offsetWidth * ScaleX + TileSpacing ) + OffsetOnScaledTile);
+      let Y = SpaceY + Math.round( Row * ( Tiles[i].offsetHeight * ScaleY + TileSpacing ) + OffsetOnScaledTile);
       // Tiles[i].Tag = i;
-      AnimatePropertyDelay( Tiles[i], "left", X, 0.2 * slowdown, ( 0 + 0.03 * i ) * slowdown );
-      AnimatePropertyDelay( Tiles[i], "top", Y, 0.1 * slowdown, ( 0 + 0.03 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "left", X, 200 * slowdown, ( 0 + 30 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "top", Y, 100 * slowdown, ( 0 + 30 * i ) * slowdown );
       /*, TAnimationType.atIn, TInterpolationType.Back*/
 
     }
 }
 
+function AnimateBaseNotChanged( )
+{
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      AnimatePropertyDelay( Tiles[i], "RotationAngle", - 20, 100 * slowdown, 0 * slowdown, TAnimationType.InOut, TInterpolationType.Linear );
+      AnimatePropertyDelay( Tiles[i], "RotationAngle", 20, 250 * slowdown, 100 * slowdown, TAnimationType.InOut, TInterpolationType.Exponential );
+      AnimatePropertyDelay( Tiles[i], "RotationAngle", 0, 250 * slowdown, 350 * slowdown, TAnimationType.Out, TInterpolationType.Back );
+    }
+}
+
+
+function AnimateTilesDisappeare( )
+{
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      AnimatePropertyDelay( Tiles[i], "Scale.X", 100, 400 * slowdown, ( 30 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "Scale.Y", 100, 400 * slowdown, ( 30 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "RotationAngle", 45, 400 * slowdown, ( 30 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "Position.Y", Tiles[i].Position.Y + TileSize, 400 * slowdown, ( 30 * i ) * slowdown, TAnimationType.In, TInterpolationType.Back );
+      AnimatePropertyDelay( Tiles[i], "Position.X", Tiles[i].Position.X + Round( double( TileSize ) / 2 ), 400 * slowdown, ( 30 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "Opacity", 0, 400 * slowdown, ( 100 + 30 * i ) * slowdown );
+    }
+}
+
+
+function AnimatePrepareBeforePlace( )
+{
+  CalcConsts();
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      let ScaleX = double( TileSize ) / Tiles[i].Width;
+      let ScaleY = double( TileSize ) / Tiles[i].Height;
+
+
+      let Col = (i % Base);
+      let Row = Math.trunc(i / Base);
+      
+      let X = SpaceX + Round( Col * ( Tiles[i].Width * ScaleX + TileSpacing ) );
+      let Y = SpaceY + Round( Row * ( Tiles[i].Height * ScaleY + TileSpacing ) );
+
+      Tiles[i].Scale.X = 0.01;
+      Tiles[i].Scale.Y = 0.01;
+      Tiles[i].RotationAngle = 45;
+      Tiles[i].Opacity = 0;
+      Tiles[i].Position.X = X + Round( double( TileSize ) / 2 );
+      Tiles[i].Position.Y = Y + TileSize;
+    }
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      Tiles[i].Position = Tile1.Position; //it is prettier
+      AnimatePropertyDelay( Tiles[i], "Opacity", 1, 400 * slowdown, ( 100 + 30 * i ) * slowdown );
+      AnimatePropertyDelay( Tiles[i], "RotationAngle", 0, 400 * slowdown, ( 30 * i ) * slowdown );
+    }
+}
+
+
+function AnimateTimeRunningOut( )
+{
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      // let GradientAni = Tiles[i].getAttribute('GradientAni') ;
+      let GradientAni = new TGradientAnimation(Tiles[i]);
+
+      GradientAni.StopColor1 = TileFillNormalColor1;
+      GradientAni.StopColor2 = "darkorange";
+      GradientAni.Delay = 0;
+      GradientAni.Duration = 150 * slowdown;
+      GradientAni.AutoReverse = true;
+      GradientAni.Start();
+    }
+}
+
+
+function AnimateTimeOver( )
+{
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      // let GradientAni = Tiles[i].getAttribute('GradientAni') ;
+      let GradientAni = new TGradientAnimation(Tiles[i]);
+
+      GradientAni.Stop();
+      GradientAni.StopColor1 = "gray";
+      GradientAni.StopColor2 = "red";
+      GradientAni.Delay = 0;
+      GradientAni.Duration = 600 * slowdown;
+      GradientAni.AutoReverse = false;
+      GradientAni.Start();
+    }
+}
+
+
+function AnimateNormalizeTilesColor( )
+{
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      // let GradientAni = Tiles[i].getAttribute('GradientAni') ;
+      let GradientAni = new TGradientAnimation(Tiles[i]);
+
+      GradientAni.StopColor1 = TileFillNormalColor1;
+      GradientAni.StopColor2 = TileFillNormalColor2;
+      GradientAni.Delay = 0;
+      GradientAni.Duration = 200;
+      GradientAni.AutoReverse = false;
+      GradientAni.Start();
+    }
+}
+
+
+function AnimatePuzzleMatched( )
+{
+  for ( let i = 0; i < Tiles.length; i++)
+    if ( Tiles[i] != undefined )
+    {
+      AnimatePropertyDelay( Tiles[i], "RotationAngle", 360, 1 * slowdown, 350 * slowdown, TAnimationType.Out, TInterpolationType.Back );
+      // let GradientAni = Tiles[i].getAttribute('GradientAni') ;
+      let GradientAni = new TGradientAnimation(Tiles[i]);
+
+      GradientAni.Stop();
+      GradientAni.StopColor1 = "lawngreen";
+      GradientAni.StopColor2 = "gold";
+      GradientAni.Delay = ( 1000 + i * 100 ) * slowdown;
+      GradientAni.Duration = 500 * slowdown;
+      GradientAni.AutoReverse = false;
+      GradientAni.Start();
+    }
+}
 
 
 //console.log(Tiles);
@@ -286,18 +625,36 @@ function AnimatePropertyDelay(Target, PropertyName,
   {
     postfix = "px";
 
+    Target.style.transition = Duration_ms + "ms";
+
     Target.style[PropertyName] = Value + postfix;
   } else if (PropertyName == "scaleX") {
     Target.style["transform"] = "scale(" + Value + ")";
   }
 }  
 
-function TGradientAnimation( )
+function TGradientAnimation( Target )
 {
-  
+  this.Target = Target;
+  this.StopColor1;
+  this.StopColor2;
+  this.Delay = 0;
+  this.Duration = 200;
+  this.AutoReverse = false;
+
+  this.Start = function() {
+    this.Target.style.transition = this.Duration + "ms";
+    this.Target.style.background = 
+    `linear-gradient(145deg, ${this.StopColor1} 35%, ${this.StopColor2} 90%)`;
+  } ;
+  this.Stop = function() {} ;
+
+
 }
 
 </script>
+
+
 
 </body>
 </html>
