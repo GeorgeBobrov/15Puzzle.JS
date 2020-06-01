@@ -152,7 +152,7 @@ function ChangeBaseClick( Sender )
 }
 
 
-function SetBase(Value )
+async function SetBase(Value )
 {
 	if ( Value == Base )
 	{
@@ -160,11 +160,12 @@ function SetBase(Value )
 		return;
 	}
 	SetMode(TMode.GameOver);
-	AnimateTilesDisappeare();
+	await AnimateTilesDisappeare();
+
 	Base = Value;
 	SetMaxTime();
 
-	setTimeout(TimerCreateTilesTimer, 400);
+	setTimeout(TimerCreateTilesTimer, 10);
 }
 
 function TimerCreateTilesTimer( )
@@ -252,7 +253,7 @@ function TileOnClick(SenderTile)
 		CheckPuzzleMatched();
 };
 
-function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
+async function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
 {
 	let WasMoved = false;
 
@@ -266,13 +267,13 @@ function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
 			if ( RowNoTile > RowPressed ) // Move tiles down
 				for ( let RowToMove = RowNoTile - 1; RowToMove >= RowPressed; RowToMove--)
 				{
-					MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove + 1, ColPressed ), MoveAniDuration, WaitAnimationEnd);
+					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove + 1, ColPressed ), MoveAniDuration, WaitAnimationEnd);
 					WasMoved = true;
 				}
 			if ( RowPressed > RowNoTile ) // Move tiles up
 				for ( let RowToMove = RowNoTile + 1; RowToMove <= RowPressed; RowToMove++)
 				{
-					MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove - 1, ColPressed ), MoveAniDuration, WaitAnimationEnd);
+					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove - 1, ColPressed ), MoveAniDuration, WaitAnimationEnd);
 					WasMoved = true;
 				}
 		}
@@ -284,13 +285,13 @@ function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
 				if ( ColNoTile > ColPressed ) // Move tiles right
 					for ( let ColToMove = ColNoTile - 1; ColToMove >= ColPressed; ColToMove--)
 					{
-						MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove + 1 ), MoveAniDuration, WaitAnimationEnd);
+						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove + 1 ), MoveAniDuration, WaitAnimationEnd);
 						WasMoved = true;
 					}
 				if ( ColPressed > ColNoTile ) // Move tiles left
 					for ( let ColToMove = ColNoTile + 1; ColToMove <= ColPressed; ColToMove++)
 					{
-						MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove - 1 ), MoveAniDuration, WaitAnimationEnd);
+						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove - 1 ), MoveAniDuration, WaitAnimationEnd);
 						WasMoved = true;
 					}
 			}
@@ -298,15 +299,18 @@ function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
 	return WasMoved;
 }
 
-function MoveTile( OldPosition, NewPosition, MoveAniDuration, WaitAnimationEnd )
+async function MoveTile( OldPosition, NewPosition, MoveAniDuration, WaitAnimationEnd )
 {
 	Tiles[NewPosition] = Tiles[OldPosition];
 	Tiles[OldPosition] = undefined;
-	AnimateMoveTile( Tiles[NewPosition], MoveAniDuration, WaitAnimationEnd );
+	if (WaitAnimationEnd)
+		await AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );
+	else
+		AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );	
 };
 
 
-function  AnimateMoveTile( ATile, MoveAniDuration, WaitAnimationEnd )
+async function AnimateMoveTile( ATile, MoveAniDuration )
 {
 	let ActPos = ActualPosition(ATile);
 	let NewCol = (ActPos % Base);
@@ -314,31 +318,33 @@ function  AnimateMoveTile( ATile, MoveAniDuration, WaitAnimationEnd )
 
 	let OffsetOnScaledTile = (TileSize - ATile.offsetWidth) / 2;
  
-
 	let X = SpaceX + Math.round( NewCol * ( TileSize + TileSpacing ) + OffsetOnScaledTile);
 	let Y = SpaceY + Math.round( NewRow * ( TileSize + TileSpacing ) + OffsetOnScaledTile);
 
+	ATile.style.transition = 
+		`all 200ms linear 0ms,
+		left ${MoveAniDuration}ms ${easeOutExpo} 0ms, 
+		top ${MoveAniDuration}ms ${easeOutExpo} 0ms`; 
 
-	if ( MoveAniDuration > 0 )
-	{
-		// AnimatePropertyDelay(ATile, "left", X, MoveAniDuration, 0, "OutExpo" );
+	return new Promise(function(resolve, reject) {
 
-		// AnimatePropertyDelay(ATile, "top", Y, MoveAniDuration, 0, "OutExpo", true, WaitAnimationEnd );
+		if ( MoveAniDuration > 0 )
+		{
+			ATile.style.left = X + "px";
+			ATile.style.top = Y + "px";   
 
-		ATile.style.transition = 
-			`all 200ms linear 0ms,
-			left ${MoveAniDuration}ms ${easeOutExpo} 0ms, 
-			top ${MoveAniDuration}ms ${easeOutExpo} 0ms`; 
+			ATile.ontransitionend = function() {
+				ATile.ontransitionend = undefined;
+				resolve();
+			};
+		}
+		else {
+			ATile.style.left = X + "px";
+			ATile.style.top = Y + "px";
+			resolve();
+		}
 
-		ATile.style.left = X + "px";
-		ATile.style.top = Y + "px";   
-
-
-	}
-	else {
-		ATile.style.left = X + "px";
-		ATile.style.top = Y + "px";
-	}
+	});
 }
 
 function CheckPuzzleMatched( )
@@ -371,7 +377,7 @@ function CheckPuzzleMatched( )
 
 
 
-function ButtonShuffleClick()
+async function ButtonShuffleClick()
 {
 	AnimateNormalizeTilesColor();
 
@@ -381,19 +387,24 @@ function ButtonShuffleClick()
 	for ( let i = 1; i <= MoveCount; i++)
 	{
 		if ( i <= 10 )
-			MoveAniDuration = MinMoveAniDuration + ( MaxMoveAniDuration * ( 1 - (  i  / 10 ) ) );
+			MoveAniDuration = MinMoveAniDuration + Math.round( MaxMoveAniDuration * ( 1 - (  i  / 10 ) ) );
 		if ( i >= MoveCount - 10 )
-			MoveAniDuration = MinMoveAniDuration + ( ( MaxMoveAniDuration / 2 ) * ( 1 - (  ( MoveCount - i )  / 10 ) ) );
+			MoveAniDuration = MinMoveAniDuration + Math.round( ( MaxMoveAniDuration / 2 ) * ( 1 - (  ( MoveCount - i )  / 10 ) ) );
 		if ( ( i > 20 ) && ( i < MoveCount - 20 ) )
 			if ( ( i % 10 ) == 0 )
 				MoveAniDuration = MinMoveAniDuration;
 			else
 				MoveAniDuration = 0;
+		
+		let WasMoved;		
 		do
 		{
 			NewI = Math.trunc(Math.random() * Tiles.length);
+			WasMoved = await TryMoveTile( NewI, MoveAniDuration, /*WaitAnimationEnd*/true );
 		}
-		while ( ! ( TryMoveTile( NewI, MoveAniDuration, /*WaitAnimationEnd*/true ) ) );
+		while ( ! WasMoved );
+
+		// console.log(Date.now() + " Move "  + String(i).padStart(3, '0') + " Delay " +  MoveAniDuration);
 	}
 	SetMaxTime();
 //  StopBlinkShuffle();
@@ -553,8 +564,9 @@ function AnimateBaseNotChanged( )
 }
 
 
-function AnimateTilesDisappeare( )
+async function AnimateTilesDisappeare( )
 {
+	let LastTile;
 	for ( let i = 0; i < Tiles.length; i++)
 		if ( Tiles[i] != undefined )
 		{
@@ -577,17 +589,21 @@ function AnimateTilesDisappeare( )
 			Tiles[i].style.left = Math.round(CurX + ( ( TileSize ) / 2 )) + "px";
 			Tiles[i].style.top = Math.round(CurY + TileSize) + "px";
 
-			// let promise = new Promise((resolve, reject) => {
-			// 	setTimeout(() => resolve("готово!"), 1000)
-			// });
-			// Tiles[i].ontransitionend = function() {
-			// 	resolve("готово!")
-			// 	Tiles[i].ontransitionend = undefined;
-			// };		
-			
-			// let result = await promise;
-
+			LastTile = Tiles[i];
 		}
+
+	return new Promise(function(resolve, reject) 
+	{
+		if ( LastTile != undefined )
+		{
+			LastTile.ontransitionend = function() 
+			{
+				LastTile.ontransitionend = undefined;
+				resolve();
+			}
+		} else
+			resolve();
+	});
 
 }
 
