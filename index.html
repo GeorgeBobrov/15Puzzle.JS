@@ -44,13 +44,27 @@ body {
 	width: 33rem;
 	height: 3rem;
 	margin: 0 auto;
-	padding: 0.1rem 0.5rem;
+	padding: 0.3rem 0.5rem;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	/*align-content: space-around; */ 
 	background-color: rgb(228, 228, 228);  
 }  
+
+.PanelButtonsBase
+{
+	width: 33%;
+	height: 100%;
+	/*margin: 0 auto;*/
+	padding: 0.1rem 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	/*align-content: space-around; */ 
+	background-color: rgb(228, 228, 228);  
+}  
+
 
 #TextTime {
 	height: 100%;
@@ -67,6 +81,13 @@ body {
 	line-height: 100%;   
 }
 
+@media only screen and (max-width: 720px) {
+	.PanelMenu  { 	
+		height: 5rem; 
+		font-size: 2;
+	}
+}
+
 </style>
 
 	<title>15Puzzle</title>
@@ -75,20 +96,20 @@ body {
 </head>
 <body>
 
-	<div class="PanelMenu">
+	<div class="PanelMenu" id="PanelMenu">
 		<div id="TextTime">TextTime</div>
 		<button class="MenuButton ButtonShuffle" onclick="ButtonShuffleClick(this)">Shuffle</button> 
-		<button class="MenuButton" onclick="ChangeBaseClick(this)">3x3</button>
-		<button class="MenuButton" onclick="ChangeBaseClick(this)">4x4</button>
-		<button class="MenuButton" onclick="ChangeBaseClick(this)">5x5</button>    
+
+		<div class="PanelButtonsBase">
+			<button class="MenuButton" onclick="ChangeBaseClick(this)">3x3</button>
+			<button class="MenuButton" onclick="ChangeBaseClick(this)">4x4</button>
+			<button class="MenuButton" onclick="ChangeBaseClick(this)">5x5</button>   
+		</div>
+ 
 	</div>
-	<div class="PanelMenu">
+	<div class="PanelMenu" id="PanelDebug">
 		<button class="MenuButton" onclick="AnimateTilesDisappeare(this)">Disappeare</button>
-		<button class="MenuButton" onclick="AnimatePrepareBeforePlace(this)">Prepare</button>    
-		<button class="MenuButton" onclick="AnimatePlaceTilesFast(this)">Place</button>
-		<button class="MenuButton" onclick="AnimatePrepPlaceTiles(this)">Prep+Place</button>   
-	</div>
-	<div class="PanelMenu">
+		<button class="MenuButton" onclick="AnimatePrepPlaceTiles(this)">Place</button>   
 		<button class="MenuButton" onclick="AnimateTimeRunningOut(this)">TimeRunningOut</button>
 		<button class="MenuButton" onclick="AnimateTimeOver(this)">TimeOver</button>
 		<button class="MenuButton" onclick="AnimatePuzzleMatched(this)">PuzzleMatched</button>
@@ -100,20 +121,25 @@ let PanelClient = document.createElement('div');
 document.body.appendChild(PanelClient);
 PanelClient.classList.add('PanelClient');
 
+let PanelMenu = document.getElementById('PanelMenu');
+let PanelDebug = document.getElementById('PanelDebug');
+let TextTime = document.getElementById('TextTime');
+
 window.onresize = WindowResize;
 function WindowResize() {
-	let newHeight = parseInt(window.innerHeight) - 150;
+	let newHeight = parseInt(window.innerHeight) - parseInt(PanelMenu.clientHeight) - 
+		parseInt(PanelDebug.clientHeight);
 	PanelClient.style.height = newHeight + "px";
+
+	TextTime.style.lineHeight = (parseInt(TextTime.clientHeight)) + "px";
+	TextTime.style.fontSize = Math.trunc(parseInt(TextTime.offsetHeight) / 2) + "px";
 };
 WindowResize();
 
 new ResizeObserver(PanelClientResize).observe(PanelClient);
 
 
-let TextTime = document.getElementById('TextTime');
 // let TextTimeStyle = window.getComputedStyle(TextTime, null);
-TextTime.style.lineHeight = (parseInt(TextTime.clientHeight)) + "px";
-TextTime.style.fontSize = Math.trunc(parseInt(TextTime.offsetHeight) / 2) + "px";
 
 let Tiles = [];
 let TileSize;
@@ -170,10 +196,6 @@ async function SetBase(Value )
 
 function TimerCreateTilesTimer( )
 {
-// #ifdef Q_OS_ANDROID
-// 	on_ButtonScaleForAndroid_clicked();
-// #endif
-
 	CreateTiles();
 	AnimatePrepareBeforePlace();
 	
@@ -301,8 +323,9 @@ async function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
 
 async function MoveTile( OldPosition, NewPosition, MoveAniDuration, WaitAnimationEnd )
 {
+	let temp = Tiles[NewPosition];
 	Tiles[NewPosition] = Tiles[OldPosition];
-	Tiles[OldPosition] = undefined;
+	Tiles[OldPosition] = temp;
 	if (WaitAnimationEnd)
 		await AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );
 	else
@@ -337,6 +360,12 @@ async function AnimateMoveTile( ATile, MoveAniDuration )
 				ATile.ontransitionend = undefined;
 				resolve();
 			};
+			// ATile.ontransitioncanceled = function() {
+			// 	ATile.ontransitioncanceled = undefined;
+			// 	resolve();
+			// };
+
+
 		}
 		else {
 			ATile.style.left = X + "px";
@@ -540,8 +569,22 @@ function AnimatePlaceTilesFast( )
 		}
 }
 
-
+let BaseNotChangedAni = 0;
 function AnimateBaseNotChanged( )
+{
+	switch (BaseNotChangedAni) {
+		case 0:
+			AnimateBaseNotChanged1();
+			break;
+		default:
+			AnimateBaseNotChanged2();
+			break;
+	}
+
+	BaseNotChangedAni = (++BaseNotChangedAni) % 2;
+}
+
+function AnimateBaseNotChanged1( )
 {
 	for ( let i = 0; i < Tiles.length; i++)
 		if ( Tiles[i] != undefined )
@@ -562,6 +605,32 @@ function AnimateBaseNotChanged( )
 			} , 100);
 		}
 }
+
+function AnimateBaseNotChanged2( )
+{
+	for ( let i = 0; i < Tiles.length; i++)
+		if ( Tiles[i] != undefined )
+		{
+			let Tile = Tiles[i];
+
+			let ScaleX = ( TileSize ) / Tile.offsetWidth;
+
+			let dl = 30 * i; //delay for tile
+
+			Tile.style.transition = `all 200ms linear 0ms,
+				transform 300ms ${easeInBack} ${dl}ms`; 
+
+			Tile.style.transform = "scale(" + (ScaleX / 2) + ")";
+			setTimeout(function() 
+			{
+				Tile.style.transition = `all 200ms linear 0ms,
+					transform 300ms ${easeOutBack} 0ms`, 
+
+				Tile.style.transform = ScaleSettings;
+			}, 300 + dl) ;
+		}
+}
+
 
 
 async function AnimateTilesDisappeare( )
