@@ -19,8 +19,6 @@ body {
 	margin: 0 auto;
 	overflow: hidden;
 	resize: both;
-	/*display: flex;
-	flex-wrap: wrap;*/
 	background-color: rgb(244, 244, 244);
 }
 
@@ -147,14 +145,21 @@ let TileSpacing;
 let SpaceX, SpaceY;
 let Base;
 
+// Object.defineProperty(this, "Base", {
+//     get() {
+// 	}
+// 	set() {
+// 	}
+//   });
+
 const TMode = Object.freeze({"Game":1, "GameOver":2, "JustShuffled":3, "PuzzleMatched":4});
 let Mode;
 						
 let slowdown = 1.0;
 const MaxMoveAniDuration = 150;
 const MinMoveAniDuration = 1;
-const TileFillNormalColor1 = 'bisque';
-const TileFillNormalColor2 = '#ABE024';
+const TileFillNormalColor1 = 0xFFE4C4; //bisque:'#FFE4C4'
+const TileFillNormalColor2 = 0xABE024; //'#ABE024';
 
 const easeOutBack = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
 const easeInBack  =	'cubic-bezier(0.6, -0.28, 0.735, 0.045)';
@@ -220,7 +225,6 @@ function CreateTiles( )
 			let NewTile = document.createElement('div');
 
 			NewTile.innerHTML = i + 1;
-			NewTile.setAttribute('TextNumber', i);
 
 			NewTile.classList.add('Tile');
 
@@ -230,6 +234,12 @@ function CreateTiles( )
 				event.preventDefault(); 
 				TileOnClick(this)
 			};
+
+			// NewTile.setAttribute('CurColor1', TileFillNormalColor1); 
+			// NewTile.setAttribute('CurColor2', TileFillNormalColor2); 
+
+			NewTile.CurColor1 = TileFillNormalColor1;
+			NewTile.CurColor2 = TileFillNormalColor2;
 
 			PanelClient.appendChild(NewTile);
 //      NewTile.SendToBack;
@@ -289,13 +299,13 @@ async function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
 			if ( RowNoTile > RowPressed ) // Move tiles down
 				for ( let RowToMove = RowNoTile - 1; RowToMove >= RowPressed; RowToMove--)
 				{
-					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove + 1, ColPressed ), MoveAniDuration, WaitAnimationEnd);
+					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove + 1, ColPressed ) );
 					WasMoved = true;
 				}
 			if ( RowPressed > RowNoTile ) // Move tiles up
 				for ( let RowToMove = RowNoTile + 1; RowToMove <= RowPressed; RowToMove++)
 				{
-					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove - 1, ColPressed ), MoveAniDuration, WaitAnimationEnd);
+					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove - 1, ColPressed ) );
 					WasMoved = true;
 				}
 		}
@@ -307,30 +317,32 @@ async function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
 				if ( ColNoTile > ColPressed ) // Move tiles right
 					for ( let ColToMove = ColNoTile - 1; ColToMove >= ColPressed; ColToMove--)
 					{
-						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove + 1 ), MoveAniDuration, WaitAnimationEnd);
+						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove + 1 ) );
 						WasMoved = true;
 					}
 				if ( ColPressed > ColNoTile ) // Move tiles left
 					for ( let ColToMove = ColNoTile + 1; ColToMove <= ColPressed; ColToMove++)
 					{
-						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove - 1 ), MoveAniDuration, WaitAnimationEnd);
+						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove - 1 ) );
 						WasMoved = true;
 					}
 			}
 
 	return WasMoved;
+
+	async function MoveTile( OldPosition, NewPosition )
+	{
+		let temp = Tiles[NewPosition];
+		Tiles[NewPosition] = Tiles[OldPosition];
+		Tiles[OldPosition] = temp;
+		if (WaitAnimationEnd)
+			await AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );
+		else
+			AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );	
+	};
+
 }
 
-async function MoveTile( OldPosition, NewPosition, MoveAniDuration, WaitAnimationEnd )
-{
-	let temp = Tiles[NewPosition];
-	Tiles[NewPosition] = Tiles[OldPosition];
-	Tiles[OldPosition] = temp;
-	if (WaitAnimationEnd)
-		await AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );
-	else
-		AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );	
-};
 
 
 async function AnimateMoveTile( ATile, MoveAniDuration )
@@ -360,11 +372,6 @@ async function AnimateMoveTile( ATile, MoveAniDuration )
 				ATile.ontransitionend = undefined;
 				resolve();
 			};
-			// ATile.ontransitioncanceled = function() {
-			// 	ATile.ontransitioncanceled = undefined;
-			// 	resolve();
-			// };
-
 
 		}
 		else {
@@ -726,14 +733,20 @@ function AnimateTimeRunningOut( )
 	for ( let i = 0; i < Tiles.length; i++)
 		if ( Tiles[i] != undefined )
 		{
-			Tiles[i].style.transition = "150ms";
-			Tiles[i].style.boxShadow = "0 -30px 20px -12px darkorange inset"; 
-
 			let Tile = Tiles[i];
+
+			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, /*darkorange*/'0xFF8C00', 150);
+
 			setTimeout(function() {
-				Tile.style.boxShadow = ""; 
+				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, TileFillNormalColor2, 150);
 			} , 150);
 
+			// Tiles[i].style.transition = "150ms";
+			// Tiles[i].style.boxShadow = "0 -30px 20px -12px darkorange inset"; 
+
+			// setTimeout(function() {
+			// 	Tile.style.boxShadow = ""; 
+			// } , 150);
 		}
 }
 
@@ -743,17 +756,21 @@ function AnimateTimeOver( )
 	for ( let i = 0; i < Tiles.length; i++)
 		if ( Tiles[i] != undefined )
 		{
-			Tiles[i].style.transition = "600ms";
-			Tiles[i].style.boxShadow = "0 -200px 10px -12px red inset"; 
-
 			let Tile = Tiles[i];
+
+			// Tiles[i].style.transition = "600ms";
+			// Tiles[i].style.boxShadow = "0 -200px 10px -12px red inset"; 
+			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*red*/'0xFF0000', /*red*/'0xFF0000', 600);
+
 			setTimeout(function() {
-				Tile.style.background = "linear-gradient(145deg, gray 35%, red 90%)";
-				Tile.style.boxShadow = ""; 
+			// 	Tile.style.background = "linear-gradient(145deg, gray 35%, red 90%)";
+			// 	Tile.style.boxShadow = ""; 
+				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*gray*/'0x808080', /*red*/'0xFF0000', 600);
 			} , 300 + 30 * i);
 
 		}
 }
+
 
 
 function AnimateNormalizeTilesColor( )
@@ -761,8 +778,11 @@ function AnimateNormalizeTilesColor( )
 	for ( let i = 0; i < Tiles.length; i++)
 		if ( Tiles[i] != undefined )
 		{
-			Tiles[i].style.transition = "200ms";
-			Tiles[i].style.background = `linear-gradient(145deg, ${TileFillNormalColor1} 35%, ${TileFillNormalColor2} 90%)`;
+			let Tile = Tiles[i];
+			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, TileFillNormalColor2, 500);
+
+			// Tiles[i].style.transition = "200ms";
+			// Tiles[i].style.background = `linear-gradient(145deg, ${TileFillNormalColor1} 35%, ${TileFillNormalColor2} 90%)`;
 		}
 }
 
@@ -778,17 +798,84 @@ function AnimatePuzzleMatched( )
 
 			let Tile = Tiles[i];
 			setTimeout(function() {
-				Tile.style.background = "linear-gradient(145deg, lawngreen 35%, gold 90%)";
+				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*lawngreen*/'0x7CFC00', /*gold*/'0xFFD700', 600);
+
+				// Tile.style.background = "linear-gradient(145deg, lawngreen 35%, gold 90%)";
 			} , 300 + 30 * i);
 
 		}
 }
 
+//-----------------------------   Realization of Gradient Animation    -----------------------------
+
+function InterpolateColor(Start, Stop, T)
+{
+	// let Alpha = (  Start.alpha + ((Stop.alpha   - Start.alpha ) * T) );
+	let Red   = Math.trunc(  Start.Red   + ((Stop.Red     - Start.Red   ) * T) );
+	let Green = Math.trunc(  Start.Green + ((Stop.Green   - Start.Green ) * T) );
+	let Blue  = Math.trunc(  Start.Blue  + ((Stop.Blue    - Start.Blue  ) * T) );
+	let Result = {"Red" : Red, "Green" : Green, "Blue" : Blue};
+	return Result;
+}
+
+
+function ColorIntToObj( ColorInt )
+{
+	let Red =		(ColorInt >> 16) & 0xFF;
+	let Green =		(ColorInt >> 8) & 0xFF;
+	let Blue =		ColorInt & 0xFF;
+	let Result = {"Red" : Red, "Green" : Green, "Blue" : Blue};
+	return Result;
+}
+
+function AnimateGradient(Target, StartColor1, StartColor2, StopColor1, StopColor2, Duration_ms)
+{
+	StartColor1 = ColorIntToObj(StartColor1);
+	StartColor2 = ColorIntToObj(StartColor2);
+
+	StopColor1 = ColorIntToObj(StopColor1);
+	StopColor2 = ColorIntToObj(StopColor2);
+	
+	let start = performance.now();
+
+	requestAnimationFrame(function animate(time) 
+	{
+		let timeFraction = (time - start) / Duration_ms;
+		if (timeFraction > 1) timeFraction = 1;
+
+		let NormalizedTime = (timeFraction);
+
+		let CurColor1 = InterpolateColor(StartColor1, StopColor1, NormalizedTime);
+		let CurColor2 = InterpolateColor(StartColor2, StopColor2, NormalizedTime);
+
+		SetGradient(Target, CurColor1, CurColor2);
+
+		if (timeFraction < 1) {
+			requestAnimationFrame(animate);
+		}
+
+	});
+}
+
+
+function SetGradient(Target, CurColor1, CurColor2)
+{
+	let sCurColor1 = `rgb(${CurColor1.Red}, ${CurColor1.Green}, ${CurColor1.Blue})`;
+	let sCurColor2 = `rgb(${CurColor2.Red}, ${CurColor2.Green}, ${CurColor2.Blue})`;
+
+	Target.style.background = `linear-gradient(145deg, ${sCurColor1} 35%, ${sCurColor2} 90%)`;
+
+	Target.CurColor1 = (CurColor1.Red << 16) + (CurColor1.Green << 8) + CurColor1.Blue;
+	Target.CurColor2 = (CurColor2.Red << 16) + (CurColor2.Green << 8) + CurColor2.Blue;
+}
+
+//-----------------------------   -----------------------------	-----------------------------
+
 function AnimatePrepPlaceTiles()
 {
+	AnimateNormalizeTilesColor();
 	AnimatePrepareBeforePlace();
 	setTimeout(AnimatePlaceTilesFast, 20);
-	// console.log("Tile " + String(i).padStart(2, '0') + " Prepr3 " + Date.now() );
 }
 
 
