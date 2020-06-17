@@ -143,17 +143,21 @@ let Tiles = [];
 let TileSize;
 let TileSpacing;
 let SpaceX, SpaceY;
-let Base;
 
-// Object.defineProperty(this, "Base", {
-//     get() {
-// 	}
-// 	set() {
-// 	}
-//   });
+let FBase;
+
+Object.defineProperty(this, "Base", {
+	get() { return FBase; },
+	set: SetBase
+});
 
 const TMode = Object.freeze({"Game":1, "GameOver":2, "JustShuffled":3, "PuzzleMatched":4});
-let Mode;
+let FMode;
+
+Object.defineProperty(this, "Mode", {
+	get() { return FMode; },
+	set: SetMode
+});
 						
 let slowdown = 1.0;
 const MaxMoveAniDuration = 150;
@@ -174,32 +178,32 @@ let TimerTime;
 let TimerResize;
 
 
-SetBase(4);
+Base = 4;
 
-function ChangeBaseClick( Sender )
+function ChangeBaseClick(Sender)
 {
 	let LBase = parseInt(Sender.innerHTML);
-	SetBase(LBase);
+	Base = LBase;
 }
 
 
-async function SetBase(Value )
+async function SetBase(Value)
 {
-	if ( Value == Base )
+	if (Value == Base)
 	{
 		AnimateBaseNotChanged();
 		return;
 	}
-	SetMode(TMode.GameOver);
+	Mode = (TMode.GameOver);
 	await AnimateTilesDisappeare();
 
-	Base = Value;
+	FBase = Value;
 	SetMaxTime();
 
 	setTimeout(TimerCreateTilesTimer, 10);
 }
 
-function TimerCreateTilesTimer( )
+function TimerCreateTilesTimer()
 {
 	CreateTiles();
 	AnimatePrepareBeforePlace();
@@ -208,19 +212,19 @@ function TimerCreateTilesTimer( )
 }
 
 
-function CreateTiles( )
+function CreateTiles()
 {
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 			{
 				Tiles[i].remove();
 				Tiles[i] = undefined;
 			}
 
 	Tiles.length = (Base * Base);
-	for ( let i = 0; i < Tiles.length - 1; i++)
+	for (let i = 0; i < Tiles.length - 1; i++)
 	{
-		if ( Tiles[i] == undefined )
+		if (Tiles[i] == undefined)
 		{
 			let NewTile = document.createElement('div');
 
@@ -235,9 +239,6 @@ function CreateTiles( )
 				TileOnClick(this)
 			};
 
-			// NewTile.setAttribute('CurColor1', TileFillNormalColor1); 
-			// NewTile.setAttribute('CurColor2', TileFillNormalColor2); 
-
 			NewTile.CurColor1 = TileFillNormalColor1;
 			NewTile.CurColor2 = TileFillNormalColor2;
 
@@ -247,105 +248,106 @@ function CreateTiles( )
 		}
 	}
 
-	if ( Tiles[Tiles.length - 1] != undefined )
+	if (Tiles[Tiles.length - 1] != undefined)
 		Tiles[Tiles.length - 1] = undefined;
 }
 
 
-function  SetMode( Value )
+function  SetMode(Value)
 {
-	Mode = Value;
-	if ( Mode == TMode.Game )
+	FMode = Value;
+	if (Mode == TMode.Game)
 		TimerTime = setInterval(TimerTimeTimer, 1000);
 	else
 		clearInterval(TimerTime)
 }
 
 
-function  ind( Row, Col )
+function  ind(Row, Col)
 {
 	return Row * Base + Col;
 }
 
 function ActualPosition(ATile)
 {
-	for ( let i = 0; i < Tiles.length; i++)
+	for (let i = 0; i < Tiles.length; i++)
 		if (Tiles[i] == ATile)
 			return i;
 	return 0;
 }
 
-function TileOnClick(SenderTile) 
+async function TileOnClick(SenderTile) 
 {
-	if ( Mode == TMode.JustShuffled )
-		SetMode(TMode.Game);
+	if (Mode == TMode.JustShuffled)
+		Mode = (TMode.Game);
 
-	let WasMoved = TryMoveTile( ActualPosition(SenderTile), MaxMoveAniDuration, false );
-	if ( WasMoved )
+	//await is necessary in order to call CheckPuzzleMatched only after all Tiles in Row or in Column have moved 
+	let WasMoved = await TryMoveTile(ActualPosition(SenderTile), MaxMoveAniDuration, false);
+	if (WasMoved)
 		CheckPuzzleMatched();
 };
 
-async function  TryMoveTile( TilePosition, MoveAniDuration, WaitAnimationEnd )
+async function  TryMoveTile(TilePosition, MoveAniDuration, WaitAnimationEnd)
 {
 	let WasMoved = false;
 
 	let ColPressed = (TilePosition % Base);
 	let RowPressed = Math.trunc(TilePosition / Base);
 
-	for ( let Row = 0; Row < Base; Row++)
-		if ( Tiles[ind( Row, ColPressed )] == undefined )
+	for (let Row = 0; Row < Base; Row++)
+		if (Tiles[ind(Row, ColPressed)] == undefined)
 		{
 			let RowNoTile = Row;
-			if ( RowNoTile > RowPressed ) // Move tiles down
-				for ( let RowToMove = RowNoTile - 1; RowToMove >= RowPressed; RowToMove--)
+			if (RowNoTile > RowPressed) // Move tiles down
+				for (let RowToMove = RowNoTile - 1; RowToMove >= RowPressed; RowToMove--)
 				{
-					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove + 1, ColPressed ) );
+					await MoveTile(ind(RowToMove, ColPressed), ind(RowToMove + 1, ColPressed));
 					WasMoved = true;
 				}
-			if ( RowPressed > RowNoTile ) // Move tiles up
-				for ( let RowToMove = RowNoTile + 1; RowToMove <= RowPressed; RowToMove++)
+			if (RowPressed > RowNoTile) // Move tiles up
+				for (let RowToMove = RowNoTile + 1; RowToMove <= RowPressed; RowToMove++)
 				{
-					await MoveTile(ind( RowToMove, ColPressed ), ind( RowToMove - 1, ColPressed ) );
+					await MoveTile(ind(RowToMove, ColPressed), ind(RowToMove - 1, ColPressed));
 					WasMoved = true;
 				}
 		}
-	if ( ! WasMoved )
-		for ( let Col = 0; Col < Base; Col++)
-			if ( Tiles[ind( RowPressed, Col )] == undefined )
+	if (! WasMoved)
+		for (let Col = 0; Col < Base; Col++)
+			if (Tiles[ind(RowPressed, Col)] == undefined)
 			{
 				let ColNoTile = Col;
-				if ( ColNoTile > ColPressed ) // Move tiles right
-					for ( let ColToMove = ColNoTile - 1; ColToMove >= ColPressed; ColToMove--)
+				if (ColNoTile > ColPressed) // Move tiles right
+					for (let ColToMove = ColNoTile - 1; ColToMove >= ColPressed; ColToMove--)
 					{
-						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove + 1 ) );
+						await MoveTile(ind(RowPressed, ColToMove), ind(RowPressed, ColToMove + 1));
 						WasMoved = true;
 					}
-				if ( ColPressed > ColNoTile ) // Move tiles left
-					for ( let ColToMove = ColNoTile + 1; ColToMove <= ColPressed; ColToMove++)
+				if (ColPressed > ColNoTile) // Move tiles left
+					for (let ColToMove = ColNoTile + 1; ColToMove <= ColPressed; ColToMove++)
 					{
-						await MoveTile(ind( RowPressed, ColToMove ), ind( RowPressed, ColToMove - 1 ) );
+						await MoveTile(ind(RowPressed, ColToMove), ind(RowPressed, ColToMove - 1));
 						WasMoved = true;
 					}
 			}
 
 	return WasMoved;
 
-	async function MoveTile( OldPosition, NewPosition )
+	async function MoveTile(OldPosition, NewPosition)
 	{
 		let temp = Tiles[NewPosition];
 		Tiles[NewPosition] = Tiles[OldPosition];
 		Tiles[OldPosition] = temp;
 		if (WaitAnimationEnd)
-			await AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );
+			await AnimateMoveTile(Tiles[NewPosition], MoveAniDuration);
 		else
-			AnimateMoveTile( Tiles[NewPosition], MoveAniDuration );	
+			AnimateMoveTile(Tiles[NewPosition], MoveAniDuration);	
 	};
 
 }
 
 
 
-async function AnimateMoveTile( ATile, MoveAniDuration )
+async function AnimateMoveTile(ATile, MoveAniDuration)
 {
 	let ActPos = ActualPosition(ATile);
 	let NewCol = (ActPos % Base);
@@ -353,8 +355,8 @@ async function AnimateMoveTile( ATile, MoveAniDuration )
 
 	let OffsetOnScaledTile = (TileSize - ATile.offsetWidth) / 2;
  
-	let X = SpaceX + Math.round( NewCol * ( TileSize + TileSpacing ) + OffsetOnScaledTile);
-	let Y = SpaceY + Math.round( NewRow * ( TileSize + TileSpacing ) + OffsetOnScaledTile);
+	let X = SpaceX + Math.round(NewCol * (TileSize + TileSpacing) + OffsetOnScaledTile);
+	let Y = SpaceY + Math.round(NewRow * (TileSize + TileSpacing) + OffsetOnScaledTile);
 
 	ATile.style.transition = 
 		`all 200ms linear 0ms,
@@ -363,7 +365,7 @@ async function AnimateMoveTile( ATile, MoveAniDuration )
 
 	return new Promise(function(resolve, reject) {
 
-		if ( MoveAniDuration > 0 )
+		if (MoveAniDuration > 0)
 		{
 			ATile.style.left = X + "px";
 			ATile.style.top = Y + "px";   
@@ -383,31 +385,31 @@ async function AnimateMoveTile( ATile, MoveAniDuration )
 	});
 }
 
-function CheckPuzzleMatched( )
+function CheckPuzzleMatched()
 {
 	let LPuzzleMatched = true;
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
 			let TextNumber = Tiles[i].innerHTML;
 
-			if ( (TextNumber - 1) != ActualPosition(Tiles[i]) )
+			if ((TextNumber - 1) != ActualPosition(Tiles[i]))
 			{
 				LPuzzleMatched = false;
 				break;
 			}
 		}
 
-	if ( LPuzzleMatched && ( Mode == TMode.Game ) )
+	if (LPuzzleMatched && (Mode == TMode.Game))
 	{
-		SetMode(TMode.PuzzleMatched);
+		Mode = (TMode.PuzzleMatched);
 		AnimatePuzzleMatched();
 	}
-	if ( ( ! LPuzzleMatched ) && ( ( Mode == TMode.PuzzleMatched ) || ( Mode == TMode.JustShuffled ) ) )
+	if ((! LPuzzleMatched) && ((Mode == TMode.PuzzleMatched) || (Mode == TMode.JustShuffled)))
 	{
 		AnimateNormalizeTilesColor();
-		if ( Mode == TMode.PuzzleMatched )
-			SetMode(TMode.GameOver);
+		if (Mode == TMode.PuzzleMatched)
+			Mode = (TMode.GameOver);
 	}
 }
 
@@ -420,14 +422,14 @@ async function ButtonShuffleClick()
 	let NewI = 0;
 	let MoveCount = Tiles.length * Tiles.length;
 	let MoveAniDuration = MaxMoveAniDuration;
-	for ( let i = 1; i <= MoveCount; i++)
+	for (let i = 1; i <= MoveCount; i++)
 	{
-		if ( i <= 10 )
-			MoveAniDuration = MinMoveAniDuration + Math.round( MaxMoveAniDuration * ( 1 - (  i  / 10 ) ) );
-		if ( i >= MoveCount - 10 )
-			MoveAniDuration = MinMoveAniDuration + Math.round( ( MaxMoveAniDuration / 2 ) * ( 1 - (  ( MoveCount - i )  / 10 ) ) );
-		if ( ( i > 20 ) && ( i < MoveCount - 20 ) )
-			if ( ( i % 10 ) == 0 )
+		if (i <= 10)
+			MoveAniDuration = MinMoveAniDuration + Math.round(MaxMoveAniDuration * (1 - ( i  / 10)));
+		if (i >= MoveCount - 10)
+			MoveAniDuration = MinMoveAniDuration + Math.round((MaxMoveAniDuration / 2) * (1 - ( (MoveCount - i)  / 10)));
+		if ((i > 20) && (i < MoveCount - 20))
+			if ((i % 10) == 0)
 				MoveAniDuration = MinMoveAniDuration;
 			else
 				MoveAniDuration = 0;
@@ -436,16 +438,16 @@ async function ButtonShuffleClick()
 		do
 		{
 			NewI = Math.trunc(Math.random() * Tiles.length);
-			WasMoved = await TryMoveTile( NewI, MoveAniDuration, /*WaitAnimationEnd*/true );
+			WasMoved = await TryMoveTile(NewI, MoveAniDuration, /*WaitAnimationEnd*/true);
 		}
-		while ( ! WasMoved );
+		while (! WasMoved);
 
 		// console.log(Date.now() + " Move "  + String(i).padStart(3, '0') + " Delay " +  MoveAniDuration);
 	}
 	SetMaxTime();
 //  StopBlinkShuffle();
 
-	SetMode(TMode.JustShuffled);
+	Mode = (TMode.JustShuffled);
 	CheckPuzzleMatched();
 }
 
@@ -459,22 +461,22 @@ function TimerTimeTimer()
 
 	TextTime.innerHTML = Min + ":" + String(Sec).padStart(2, '0');
 
-	if ( TimeRemaining == 0 )
+	if (TimeRemaining == 0)
 	{
-		SetMode(TMode.GameOver);
+		Mode = (TMode.GameOver);
 		AnimateTimeOver();
 //		StartBlinkShuffle();
 		return;
 	}
-	if ( TimeRemaining <= 10 )
+	if (TimeRemaining <= 10)
 		AnimateTimeRunningOut();
 
 }
 
 
-function SetMaxTime( )
+function SetMaxTime()
 {
-	TimeRemaining = Math.trunc( ( Base * Base * Base * Base ) / 20 ) * 10;
+	TimeRemaining = Math.trunc((Base * Base * Base * Base) / 20) * 10;
 
 	let Sec = (TimeRemaining % 60);
 	let Min = Math.trunc(TimeRemaining / 60);
@@ -495,7 +497,7 @@ function TimerResizeTimer()
 {
 	let TimeFromLastResize_ms = Date.now() - LastResizeTime;
 
-	if ( TimeFromLastResize_ms > 1000 )
+	if (TimeFromLastResize_ms > 1000)
 	{
 		AnimatePlaceTilesFast();
 		LastResizeTime = Date.now();
@@ -508,7 +510,7 @@ let ClosingAnimation = false;
 window.onclose = closeEvent;
 function closeEvent(event)
 {
-	if ( ! ClosingAnimation )
+	if (! ClosingAnimation)
 	{
 		AnimateTilesDisappeare();
 		ClosingAnimation = true;
@@ -517,40 +519,84 @@ function closeEvent(event)
 
 //-------------------------------   Animations   -----------------------------
 
-function CalcConsts( )
+function CalcConsts()
 {
 	let Height = parseInt(PanelClient.clientHeight);
 	let Width = parseInt(PanelClient.clientWidth);
 
-	if ( Height > Width )
+	if (Height > Width)
 	{
-		SpaceX = Math.round( ( Width ) / 20 );
-		TileSize = Math.round( ( ( Width - SpaceX * 2 ) ) / Base );
-		SpaceY = SpaceX + Math.round( ( ( Height - Width ) ) / 2 );
+		SpaceX = Math.round((Width) / 20);
+		TileSize = Math.round(((Width - SpaceX * 2)) / Base);
+		SpaceY = SpaceX + Math.round(((Height - Width)) / 2);
 	}
 	else
 	{
-		SpaceY = Math.round( ( Height ) / 20 );
-		TileSize = Math.round( ( ( Height - SpaceY * 2 ) ) / Base );
-		SpaceX = SpaceY + Math.round( ( ( Width - Height ) ) / 2 );
+		SpaceY = Math.round((Height) / 20);
+		TileSize = Math.round(((Height - SpaceY * 2)) / Base);
+		SpaceX = SpaceY + Math.round(((Width - Height)) / 2);
 	}
-	TileSpacing = Math.round( TileSize * 0.06 );
-	TileSize = Math.round( TileSize * 0.94 );
-	SpaceX = SpaceX + Math.round( ( TileSpacing ) / 2 );
-	SpaceY = SpaceY + Math.round( ( TileSpacing ) / 2 );
+	TileSpacing = Math.round(TileSize * 0.06);
+	TileSize = Math.round(TileSize * 0.94);
+	SpaceX = SpaceX + Math.round((TileSpacing) / 2);
+	SpaceY = SpaceY + Math.round((TileSpacing) / 2);
+}
+
+
+function AnimatePrepareBeforePlace()
+{
+	CalcConsts();
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
+		{
+			let ScaleX = (TileSize) / Tiles[i].offsetWidth;
+			let ScaleY = (TileSize) / Tiles[i].offsetHeight;
+
+			let Col = (i % Base);
+			let Row = Math.trunc(i / Base);
+			
+			let X = SpaceX + Math.round(Col * (Tiles[i].offsetWidth * ScaleX + TileSpacing));
+			let Y = SpaceY + Math.round(Row * (Tiles[i].offsetHeight * ScaleY + TileSpacing));
+
+			Tiles[i].style.transition = "0ms";
+			Tiles[i].style.transform = "scaleX(0.1) scaleY(0.5) rotate(45deg)";
+
+			Tiles[i].style.opacity = 0;
+			Tiles[i].style.left = (X + Math.round((TileSize) / 2)) + "px";
+			Tiles[i].style.top = (Y + TileSize) + "px";
+		}
+
+	setTimeout(function() 
+	{  
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
+		{
+			let dl = 30 * i; //delay for tile
+
+			Tiles[i].style.transition = `all 200ms linear 0ms,
+				transform 200ms linear ${dl}ms, 
+				left 200ms linear ${dl}ms, 
+				top 100ms linear ${dl}ms, 
+				opacity 400ms linear ${100 + dl}ms`;
+
+			Tiles[i].style.transform = "rotate(45deg)";
+			Tiles[i].style.opacity = 1;
+
+		}
+	}, 20);
 }
 
 let ScaleSettings;
 
-function AnimatePlaceTilesFast( )
+function AnimatePlaceTilesFast()
 {
 	CalcConsts();
 
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
-			let ScaleX = ( TileSize ) / Tiles[i].offsetWidth;
-			let ScaleY = ( TileSize ) / Tiles[i].offsetHeight;
+			let ScaleX = (TileSize) / Tiles[i].offsetWidth;
+			let ScaleY = (TileSize) / Tiles[i].offsetHeight;
 
 			let OffsetOnScaledTile = (TileSize - Tiles[i].offsetWidth) / 2;
 
@@ -568,16 +614,62 @@ function AnimatePlaceTilesFast( )
 			let Col = (i % Base);
 			let Row = Math.trunc(i / Base);
 
-			let X = SpaceX + Math.round( Col * ( Tiles[i].offsetWidth * ScaleX + TileSpacing ) + OffsetOnScaledTile);
-			let Y = SpaceY + Math.round( Row * ( Tiles[i].offsetHeight * ScaleY + TileSpacing ) + OffsetOnScaledTile);
+			let X = SpaceX + Math.round(Col * (Tiles[i].offsetWidth * ScaleX + TileSpacing) + OffsetOnScaledTile);
+			let Y = SpaceY + Math.round(Row * (Tiles[i].offsetHeight * ScaleY + TileSpacing) + OffsetOnScaledTile);
 
 			Tiles[i].style.left = X + "px";
 			Tiles[i].style.top = Y + "px";   
 		}
 }
 
+
+async function AnimateTilesDisappeare()
+{
+	let LastTile;
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
+		{
+			let dl = 30 * i; //delay for tile
+
+			Tiles[i].style.transition = `all 200ms linear 0ms,
+				transform 400ms linear ${dl}ms, 
+				left 400ms linear ${dl}ms, 
+				top 400ms ${easeInBack} ${dl}ms, 
+				opacity 400ms linear ${100 + dl}ms`;
+				
+			Tiles[i].style.transform = "scale(0.1) rotate(45deg)";
+
+			Tiles[i].style.opacity = 0;
+
+			let OffsetOnScaledTile = (TileSize - Tiles[i].offsetWidth) / 2;
+
+			let CurX = parseInt(Tiles[i].style.left) - OffsetOnScaledTile;
+			let CurY = parseInt(Tiles[i].style.top) - OffsetOnScaledTile;
+			Tiles[i].style.left = Math.round(CurX + ((TileSize) / 2)) + "px";
+			Tiles[i].style.top = Math.round(CurY + TileSize) + "px";
+
+			LastTile = Tiles[i];
+		}
+
+	return new Promise(function(resolve, reject) 
+	{
+		if (LastTile != undefined)
+		{
+			LastTile.ontransitionend = function() 
+			{
+				LastTile.ontransitionend = undefined;
+				resolve();
+			}
+		} else
+			resolve();
+	});
+
+}
+
+
+
 let BaseNotChangedAni = 0;
-function AnimateBaseNotChanged( )
+function AnimateBaseNotChanged()
 {
 	switch (BaseNotChangedAni) {
 		case 0:
@@ -591,10 +683,11 @@ function AnimateBaseNotChanged( )
 	BaseNotChangedAni = (++BaseNotChangedAni) % 2;
 }
 
-function AnimateBaseNotChanged1( )
+
+function AnimateBaseNotChanged1()
 {
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
 			let Tile = Tiles[i];
 
@@ -613,14 +706,16 @@ function AnimateBaseNotChanged1( )
 		}
 }
 
-function AnimateBaseNotChanged2( )
+
+
+function AnimateBaseNotChanged2()
 {
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
 			let Tile = Tiles[i];
 
-			let ScaleX = ( TileSize ) / Tile.offsetWidth;
+			let ScaleX = (TileSize) / Tile.offsetWidth;
 
 			let dl = 30 * i; //delay for tile
 
@@ -640,98 +735,12 @@ function AnimateBaseNotChanged2( )
 
 
 
-async function AnimateTilesDisappeare( )
+
+
+function AnimateTimeRunningOut()
 {
-	let LastTile;
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
-		{
-			let dl = 30 * i; //delay for tile
-
-			Tiles[i].style.transition = `all 200ms linear 0ms,
-				transform 400ms linear ${dl}ms, 
-				left 400ms linear ${dl}ms, 
-				top 400ms ${easeInBack} ${dl}ms, 
-				opacity 400ms linear ${100 + dl}ms`;
-				
-			Tiles[i].style.transform = "scale(0.1) rotate(45deg)";
-
-			Tiles[i].style.opacity = 0;
-
-			let OffsetOnScaledTile = (TileSize - Tiles[i].offsetWidth) / 2;
-
-			let CurX = parseInt(Tiles[i].style.left) - OffsetOnScaledTile;
-			let CurY = parseInt(Tiles[i].style.top) - OffsetOnScaledTile;
-			Tiles[i].style.left = Math.round(CurX + ( ( TileSize ) / 2 )) + "px";
-			Tiles[i].style.top = Math.round(CurY + TileSize) + "px";
-
-			LastTile = Tiles[i];
-		}
-
-	return new Promise(function(resolve, reject) 
-	{
-		if ( LastTile != undefined )
-		{
-			LastTile.ontransitionend = function() 
-			{
-				LastTile.ontransitionend = undefined;
-				resolve();
-			}
-		} else
-			resolve();
-	});
-
-}
-
-
-function AnimatePrepareBeforePlace( )
-{
-	CalcConsts();
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
-		{
-			let ScaleX = ( TileSize ) / Tiles[i].offsetWidth;
-			let ScaleY = ( TileSize ) / Tiles[i].offsetHeight;
-
-			let Col = (i % Base);
-			let Row = Math.trunc(i / Base);
-			
-			let X = SpaceX + Math.round( Col * ( Tiles[i].offsetWidth * ScaleX + TileSpacing ) );
-			let Y = SpaceY + Math.round( Row * ( Tiles[i].offsetHeight * ScaleY + TileSpacing ) );
-
-			Tiles[i].style.transition = "0ms";
-			Tiles[i].style.transform = "scale(0.01) rotate(45deg)";
-
-			Tiles[i].style.opacity = 0;
-			Tiles[i].style.left = (X + Math.round( ( TileSize ) / 2 )) + "px";
-			Tiles[i].style.top = (Y + TileSize) + "px";
-		}
-
-	setTimeout(function() 
-	{  
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
-		{
-			let dl = 30 * i; //delay for tile
-
-			Tiles[i].style.transition = `all 200ms linear 0ms,
-				transform 200ms linear ${dl}ms, 
-				left 200ms linear ${dl}ms, 
-				top 100ms linear ${dl}ms, 
-				opacity 400ms linear ${100 + dl}ms`;
-
-			Tiles[i].style.transform = "rotate(45deg)";
-			Tiles[i].style.opacity = 1;
-
-		}
-	}, 20);
-}
-
-
-function AnimateTimeRunningOut( )
-{
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
 			let Tile = Tiles[i];
 
@@ -741,30 +750,20 @@ function AnimateTimeRunningOut( )
 				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, TileFillNormalColor2, 150);
 			} , 150);
 
-			// Tiles[i].style.transition = "150ms";
-			// Tiles[i].style.boxShadow = "0 -30px 20px -12px darkorange inset"; 
-
-			// setTimeout(function() {
-			// 	Tile.style.boxShadow = ""; 
-			// } , 150);
 		}
 }
 
 
-function AnimateTimeOver( )
+function AnimateTimeOver()
 {
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
 			let Tile = Tiles[i];
 
-			// Tiles[i].style.transition = "600ms";
-			// Tiles[i].style.boxShadow = "0 -200px 10px -12px red inset"; 
 			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*red*/'0xFF0000', /*red*/'0xFF0000', 600);
 
 			setTimeout(function() {
-			// 	Tile.style.background = "linear-gradient(145deg, gray 35%, red 90%)";
-			// 	Tile.style.boxShadow = ""; 
 				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*gray*/'0x808080', /*red*/'0xFF0000', 600);
 			} , 300 + 30 * i);
 
@@ -773,24 +772,25 @@ function AnimateTimeOver( )
 
 
 
-function AnimateNormalizeTilesColor( )
+function AnimateNormalizeTilesColor()
 {
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
+			Tiles[i].style.transition = `all 200ms linear 0ms,
+				transform 0ms linear 0ms`;
+			Tiles[i].style.transform = ScaleSettings;
+
 			let Tile = Tiles[i];
 			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, TileFillNormalColor2, 500);
-
-			// Tiles[i].style.transition = "200ms";
-			// Tiles[i].style.background = `linear-gradient(145deg, ${TileFillNormalColor1} 35%, ${TileFillNormalColor2} 90%)`;
 		}
 }
 
 
-function AnimatePuzzleMatched( )
+function AnimatePuzzleMatched()
 {
-	for ( let i = 0; i < Tiles.length; i++)
-		if ( Tiles[i] != undefined )
+	for (let i = 0; i < Tiles.length; i++)
+		if (Tiles[i] != undefined)
 		{
 			Tiles[i].style.transition = `all 200ms linear 0ms,
 				transform 1000ms ${easeOutBack} 350ms`;
@@ -799,8 +799,6 @@ function AnimatePuzzleMatched( )
 			let Tile = Tiles[i];
 			setTimeout(function() {
 				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*lawngreen*/'0x7CFC00', /*gold*/'0xFFD700', 600);
-
-				// Tile.style.background = "linear-gradient(145deg, lawngreen 35%, gold 90%)";
 			} , 300 + 30 * i);
 
 		}
@@ -810,16 +808,16 @@ function AnimatePuzzleMatched( )
 
 function InterpolateColor(Start, Stop, T)
 {
-	// let Alpha = (  Start.alpha + ((Stop.alpha   - Start.alpha ) * T) );
-	let Red   = Math.trunc(  Start.Red   + ((Stop.Red     - Start.Red   ) * T) );
-	let Green = Math.trunc(  Start.Green + ((Stop.Green   - Start.Green ) * T) );
-	let Blue  = Math.trunc(  Start.Blue  + ((Stop.Blue    - Start.Blue  ) * T) );
+	// let Alpha = ( Start.alpha + ((Stop.alpha   - Start.alpha) * T));
+	let Red   = Math.trunc( Start.Red   + ((Stop.Red     - Start.Red  ) * T));
+	let Green = Math.trunc( Start.Green + ((Stop.Green   - Start.Green) * T));
+	let Blue  = Math.trunc( Start.Blue  + ((Stop.Blue    - Start.Blue ) * T));
 	let Result = {"Red" : Red, "Green" : Green, "Blue" : Blue};
 	return Result;
 }
 
 
-function ColorIntToObj( ColorInt )
+function ColorIntToObj(ColorInt)
 {
 	let Red =		(ColorInt >> 16) & 0xFF;
 	let Green =		(ColorInt >> 8) & 0xFF;
