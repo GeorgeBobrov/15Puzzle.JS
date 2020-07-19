@@ -12,7 +12,7 @@ body {
 }
 
 
-.PanelClient {
+.panelClient {
 	position: relative;
 	width: 33rem;
 	height: 500px;
@@ -22,7 +22,7 @@ body {
 	background-color: rgb(244, 244, 244);
 }
 
-.Tile {
+.tile {
 	position: absolute;
 	width: 50px;
 	height: 50px;  
@@ -37,7 +37,7 @@ body {
 	transition: .2s;
 }
 
-.PanelMenu {
+.panelMenu {
 	width: 33rem;
 	margin: 0 auto;
 	padding: 0.3rem 0.5rem;
@@ -49,7 +49,7 @@ body {
 	background-color: rgb(228, 228, 228);  
 }  
 
-.PanelButtonsBase
+.panelButtonsBase
 {
 	width: 33%;
 	padding: 0.1rem 0;
@@ -61,7 +61,7 @@ body {
 }  
 
 
-#TextTime {
+#textTime {
 	height: 2rem;
 	font-size: 1.3rem;
 	line-height: 1.9rem; 
@@ -71,7 +71,7 @@ body {
 	border: 1px solid rgb(85, 123, 229);
 }
 
-.ButtonMenu {
+.buttonMenu {
 	height: 2rem;
 	padding: 0px 5px;
 	text-align: center;
@@ -79,29 +79,29 @@ body {
 
 }
 
-.ButtonDebug {
+.buttonDebug {
 	margin: 2px 0;  
 }
 
-.PanelDebug{
+.panelDebug{
 	margin: -2px auto;  
 }
 
 @media only screen and (max-width: 720px) {
-	.PanelMenu  { 	
+	.panelMenu  { 	
 		width: 100vw;
 		font-size: 2;
 	}
-	.PanelClient {
+	.panelClient {
 		width: 100vw;
 		resize: none;
 
 	}
-	.ButtonMenu {
+	.buttonMenu {
 		height: 2.5rem;
 	}
 
-	#TextTime {
+	#textTime {
 		height: 2.5rem;
 		font-size: 1.8rem;
 		line-height: 2.4rem; 
@@ -117,73 +117,73 @@ body {
 </head>
 <body>
 
-	<div class="PanelMenu" id="PanelMenu">
-		<div id="TextTime">TextTime</div>
-		<button class="ButtonMenu ButtonShuffle" onclick="ButtonShuffleClick(this)">Shuffle</button> 
+	<div class="panelMenu" id="panelMenu">
+		<div id="textTime">textTime</div>
+		<button class="buttonMenu buttonShuffle" onclick="buttonShuffleClick(this)">Shuffle</button> 
 
-		<div class="PanelButtonsBase">
-			<button class="ButtonMenu" onclick="ChangeBaseClick(this)">3x3</button>
-			<button class="ButtonMenu" onclick="ChangeBaseClick(this)">4x4</button>
-			<button class="ButtonMenu" onclick="ChangeBaseClick(this)">5x5</button>   
+		<div class="panelButtonsBase">
+			<button class="buttonMenu" onclick="changeBaseClick(this)">3x3</button>
+			<button class="buttonMenu" onclick="changeBaseClick(this)">4x4</button>
+			<button class="buttonMenu" onclick="changeBaseClick(this)">5x5</button>   
 		</div>
  
 	</div>
-	<div class="PanelMenu PanelDebug" style="display: none"  id="PanelDebug">
-		<button class="ButtonMenu ButtonDebug" onclick="AnimateTilesDisappeare(this)">Disappeare</button>
-		<button class="ButtonMenu ButtonDebug" onclick="AnimatePrepPlaceTiles(this)">Place</button>   
-		<button class="ButtonMenu ButtonDebug" onclick="AnimateTimeRunningOut(this)">TimeRunningOut</button>
-		<button class="ButtonMenu ButtonDebug" onclick="AnimateTimeOver(this)">TimeOver</button>
-		<button class="ButtonMenu ButtonDebug" onclick="AnimatePuzzleMatched(this)">PuzzleMatched</button>
+	<div class="panelMenu panelDebug" style="display: none"  id="panelDebug">
+		<button class="buttonMenu buttonDebug" onclick="animateTilesDisappeare(this)">Disappeare</button>
+		<button class="buttonMenu buttonDebug" onclick="animatePrepPlaceTiles(this)">Place</button>   
+		<button class="buttonMenu buttonDebug" onclick="animateTimeRunningOut(this)">TimeRunningOut</button>
+		<button class="buttonMenu buttonDebug" onclick="animateTimeOver(this)">TimeOver</button>
+		<button class="buttonMenu buttonDebug" onclick="animatePuzzleMatched(this)">PuzzleMatched</button>
 	</div>  
 
 <script>
 
-let PanelClient = document.createElement('div');
-document.body.appendChild(PanelClient);
-PanelClient.classList.add('PanelClient');
+let panelClient = document.createElement('div');
+document.body.appendChild(panelClient);
+panelClient.classList.add('panelClient');
 
-let PanelMenu = document.getElementById('PanelMenu');
-let PanelDebug = document.getElementById('PanelDebug');
-let TextTime = document.getElementById('TextTime');
+let panelMenu = document.getElementById('panelMenu');
+let panelDebug = document.getElementById('panelDebug');
+let textTime = document.getElementById('textTime');
 
-window.onresize = WindowResize;
-function WindowResize() {
-	let newHeight = parseInt(window.innerHeight) - parseInt(PanelMenu.clientHeight) - 
-		parseInt(PanelDebug.clientHeight);
-	PanelClient.style.height = newHeight + "px";
+window.onresize = windowResize;
+function windowResize() {
+	let newHeight = parseInt(window.innerHeight) - parseInt(panelMenu.clientHeight) - 
+		parseInt(panelDebug.clientHeight);
+	panelClient.style.height = newHeight + "px";
 };
-WindowResize();
+windowResize();
 
-new ResizeObserver(PanelClientResize).observe(PanelClient);
+new ResizeObserver(panelClientResize).observe(panelClient);
 
 
-// let TextTimeStyle = window.getComputedStyle(TextTime, null);
+// let textTimeStyle = window.getComputedStyle(textTime, null);
 
-let Tiles = [];
-let TileSize;
-let TileSpacing;
-let SpaceX, SpaceY;
+let tiles = [];
+let tileSize;
+let tileSpacing;
+let spaceX, spaceY;
 
-let FBase;
+let fBase;
 
-Object.defineProperty(this, "Base", {
-	get() { return FBase; },
-	set: SetBase
+Object.defineProperty(this, "base", {
+	get() { return fBase; },
+	set: setBase
 });
 
-const TMode = Object.freeze({"Game":1, "GameOver":2, "JustShuffled":3, "PuzzleMatched":4});
-let FMode;
+const Mode = Object.freeze({"Game":1, "GameOver":2, "JustShuffled":3, "PuzzleMatched":4});
+let fMode;
 
-Object.defineProperty(this, "Mode", {
-	get() { return FMode; },
-	set: SetMode
+Object.defineProperty(this, "mode", {
+	get() { return fMode; },
+	set: setMode
 });
 						
 let slowdown = 1.0;
-const MaxMoveAniDuration = 150;
-const MinMoveAniDuration = 1;
-const TileFillNormalColor1 = 0xFFE4C4; //bisque:'#FFE4C4'
-const TileFillNormalColor2 = 0xABE024; //'#ABE024';
+const maxMoveAniDuration = 150;
+const minMoveAniDuration = 1;
+const tileFillNormalColor1 = 0xFFE4C4; //bisque:'#FFE4C4'
+const tileFillNormalColor2 = 0xABE024; //'#ABE024';
 
 const easeOutBack = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
 const easeInBack  =	'cubic-bezier(0.6, -0.28, 0.735, 0.045)';
@@ -191,337 +191,337 @@ const easeInOutBack	= 'cubic-bezier(0.68, -0.55, 0.265, 1.55)';
 const easeOutExpo = 'cubic-bezier(0.19, 1, 0.22, 1)';
 const easeInOutExpo = 'cubic-bezier(1, 0, 0, 1)';
 
-let LastResizeTime = Date.now();
-let TimeRemaining;
+let lastResizeTime = Date.now();
+let timeRemaining;
 
-let TimerTime;
-let TimerResize;
+let timerTime;
+let timerResize;
 
 
-Base = 4;
+base = 4;
 
-function ChangeBaseClick(Sender)
+function changeBaseClick(sender)
 {
-	let LBase = parseInt(Sender.innerHTML);
-	Base = LBase;
+	let lBase = parseInt(sender.innerHTML);
+	base = lBase;
 }
 
 
-async function SetBase(Value)
+async function setBase(value)
 {
-	if (Value == Base)
+	if (value == base)
 	{
-		AnimateBaseNotChanged();
+		animateBaseNotChanged();
 		return;
 	}
-	Mode = (TMode.GameOver);
-	await AnimateTilesDisappeare();
+	mode = (Mode.GameOver);
+	await animateTilesDisappeare();
 
-	FBase = Value;
-	SetMaxTime();
+	fBase = value;
+	setMaxTime();
 
-	setTimeout(TimerCreateTilesTimer, 10);
+	setTimeout(timerCreateTilesTimer, 10);
 }
 
-function TimerCreateTilesTimer()
+function timerCreateTilesTimer()
 {
-	CreateTiles();
-	AnimatePrepareBeforePlace();
+	createTiles();
+	animatePrepareBeforePlace();
 	
-	setTimeout(AnimatePlaceTilesFast, 20); 
+	setTimeout(animatePlaceTilesFast, 20); 
 }
 
 
-function CreateTiles()
+function createTiles()
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)
 			{
-				Tiles[i].remove();
-				Tiles[i] = undefined;
+				tiles[i].remove();
+				tiles[i] = undefined;
 			}
 
-	Tiles.length = (Base * Base);
-	for (let i = 0; i < Tiles.length - 1; i++)
+	tiles.length = (base * base);
+	for (let i = 0; i < tiles.length - 1; i++)
 	{
-		if (Tiles[i] == undefined)
+		if (tiles[i] == undefined)
 		{
-			let NewTile = document.createElement('div');
+			let newTile = document.createElement('div');
 
-			NewTile.innerHTML = i + 1;
+			newTile.innerHTML = i + 1;
 
-			NewTile.classList.add('Tile');
+			newTile.classList.add('tile');
 
-			NewTile.onmousedown  = function(event) { TileOnClick(this) }; 
+			newTile.onmousedown  = function(event) { tileOnClick(this) }; 
 
-			NewTile.ontouchstart = function(event) 
+			newTile.ontouchstart = function(event) 
 			{
 				event.preventDefault(); 
-				TileOnClick(this)
+				tileOnClick(this)
 			};
 
-			NewTile.CurColor1 = TileFillNormalColor1;
-			NewTile.CurColor2 = TileFillNormalColor2;
+			newTile.curColor1 = tileFillNormalColor1;
+			newTile.curColor2 = tileFillNormalColor2;
 
-			PanelClient.appendChild(NewTile);
-//      NewTile.SendToBack;
-			Tiles[i] = NewTile;
+			panelClient.appendChild(newTile);
+//      newTile.SendToBack;
+			tiles[i] = newTile;
 		}
 	}
 
-	if (Tiles[Tiles.length - 1] != undefined)
-		Tiles[Tiles.length - 1] = undefined;
+	if (tiles[tiles.length - 1] != undefined)
+		tiles[tiles.length - 1] = undefined;
 }
 
 
-function  SetMode(Value)
+function  setMode(value)
 {
-	FMode = Value;
-	if (Mode == TMode.Game)
-		TimerTime = setInterval(TimerTimeTimer, 1000);
+	fMode = value;
+	if (mode == Mode.Game)
+		timerTime = setInterval(timerTimeTimer, 1000);
 	else
-		clearInterval(TimerTime)
+		clearInterval(timerTime)
 }
 
 
-function  ind(Row, Col)
+function  ind(row, col)
 {
-	return Row * Base + Col;
+	return row * base + col;
 }
 
-function ActualPosition(ATile)
+function actualPosition(tile)
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] == ATile)
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] == tile)
 			return i;
 	return 0;
 }
 
-async function TileOnClick(SenderTile) 
+async function tileOnClick(senderTile) 
 {
-	if (Mode == TMode.JustShuffled)
-		Mode = (TMode.Game);
+	if (mode == Mode.JustShuffled)
+		mode = (Mode.Game);
 
-	//await is necessary in order to call CheckPuzzleMatched only after all Tiles in Row or in Column have moved 
-	let WasMoved = await TryMoveTile(ActualPosition(SenderTile), MaxMoveAniDuration, false);
-	if (WasMoved)
-		CheckPuzzleMatched();
+	//await is necessary in order to call checkPuzzleMatched only after all tiles in row or in column have moved 
+	let wasMoved = await tryMoveTile(actualPosition(senderTile), maxMoveAniDuration, false);
+	if (wasMoved)
+		checkPuzzleMatched();
 };
 
-async function  TryMoveTile(TilePosition, MoveAniDuration, WaitAnimationEnd)
+async function  tryMoveTile(tilePosition, moveAniDuration, waitAnimationEnd)
 {
-	let WasMoved = false;
+	let wasMoved = false;
 
-	let ColPressed = (TilePosition % Base);
-	let RowPressed = Math.trunc(TilePosition / Base);
+	let colPressed = (tilePosition % base);
+	let rowPressed = Math.trunc(tilePosition / base);
 
-	for (let Row = 0; Row < Base; Row++)
-		if (Tiles[ind(Row, ColPressed)] == undefined)
+	for (let row = 0; row < base; row++)
+		if (tiles[ind(row, colPressed)] == undefined)
 		{
-			let RowNoTile = Row;
-			if (RowNoTile > RowPressed) // Move tiles down
-				for (let RowToMove = RowNoTile - 1; RowToMove >= RowPressed; RowToMove--)
+			let rowNoTile = row;
+			if (rowNoTile > rowPressed) // Move tiles down
+				for (let rowToMove = rowNoTile - 1; rowToMove >= rowPressed; rowToMove--)
 				{
-					await MoveTile(ind(RowToMove, ColPressed), ind(RowToMove + 1, ColPressed));
-					WasMoved = true;
+					await moveTile(ind(rowToMove, colPressed), ind(rowToMove + 1, colPressed));
+					wasMoved = true;
 				}
-			if (RowPressed > RowNoTile) // Move tiles up
-				for (let RowToMove = RowNoTile + 1; RowToMove <= RowPressed; RowToMove++)
+			if (rowPressed > rowNoTile) // Move tiles up
+				for (let rowToMove = rowNoTile + 1; rowToMove <= rowPressed; rowToMove++)
 				{
-					await MoveTile(ind(RowToMove, ColPressed), ind(RowToMove - 1, ColPressed));
-					WasMoved = true;
+					await moveTile(ind(rowToMove, colPressed), ind(rowToMove - 1, colPressed));
+					wasMoved = true;
 				}
 		}
-	if (! WasMoved)
-		for (let Col = 0; Col < Base; Col++)
-			if (Tiles[ind(RowPressed, Col)] == undefined)
+	if (! wasMoved)
+		for (let col = 0; col < base; col++)
+			if (tiles[ind(rowPressed, col)] == undefined)
 			{
-				let ColNoTile = Col;
-				if (ColNoTile > ColPressed) // Move tiles right
-					for (let ColToMove = ColNoTile - 1; ColToMove >= ColPressed; ColToMove--)
+				let colNoTile = col;
+				if (colNoTile > colPressed) // Move tiles right
+					for (let colToMove = colNoTile - 1; colToMove >= colPressed; colToMove--)
 					{
-						await MoveTile(ind(RowPressed, ColToMove), ind(RowPressed, ColToMove + 1));
-						WasMoved = true;
+						await moveTile(ind(rowPressed, colToMove), ind(rowPressed, colToMove + 1));
+						wasMoved = true;
 					}
-				if (ColPressed > ColNoTile) // Move tiles left
-					for (let ColToMove = ColNoTile + 1; ColToMove <= ColPressed; ColToMove++)
+				if (colPressed > colNoTile) // Move tiles left
+					for (let colToMove = colNoTile + 1; colToMove <= colPressed; colToMove++)
 					{
-						await MoveTile(ind(RowPressed, ColToMove), ind(RowPressed, ColToMove - 1));
-						WasMoved = true;
+						await moveTile(ind(rowPressed, colToMove), ind(rowPressed, colToMove - 1));
+						wasMoved = true;
 					}
 			}
 
-	return WasMoved;
+	return wasMoved;
 
-	async function MoveTile(OldPosition, NewPosition)
+	async function moveTile(oldPosition, newPosition)
 	{
-		let temp = Tiles[NewPosition];
-		Tiles[NewPosition] = Tiles[OldPosition];
-		Tiles[OldPosition] = temp;
-		if (WaitAnimationEnd)
-			await AnimateMoveTile(Tiles[NewPosition], MoveAniDuration);
+		let temp = tiles[newPosition];
+		tiles[newPosition] = tiles[oldPosition];
+		tiles[oldPosition] = temp;
+		if (waitAnimationEnd)
+			await animateMoveTile(tiles[newPosition], moveAniDuration);
 		else
-			AnimateMoveTile(Tiles[NewPosition], MoveAniDuration);	
+			animateMoveTile(tiles[newPosition], moveAniDuration);	
 	};
 
 }
 
 
 
-async function AnimateMoveTile(ATile, MoveAniDuration)
+async function animateMoveTile(tile, moveAniDuration)
 {
-	let ActPos = ActualPosition(ATile);
-	let NewCol = (ActPos % Base);
-	let NewRow = Math.trunc(ActPos / Base);
+	let actPos = actualPosition(tile);
+	let newCol = (actPos % base);
+	let newRow = Math.trunc(actPos / base);
 
-	let OffsetOnScaledTile = (TileSize - ATile.offsetWidth) / 2;
+	let offsetOnScaledTile = (tileSize - tile.offsetWidth) / 2;
  
-	let X = SpaceX + Math.round(NewCol * (TileSize + TileSpacing) + OffsetOnScaledTile);
-	let Y = SpaceY + Math.round(NewRow * (TileSize + TileSpacing) + OffsetOnScaledTile);
+	let x = spaceX + Math.round(newCol * (tileSize + tileSpacing) + offsetOnScaledTile);
+	let y = spaceY + Math.round(newRow * (tileSize + tileSpacing) + offsetOnScaledTile);
 
-	ATile.style.transition = 
+	tile.style.transition = 
 		`all 200ms linear 0ms,
-		left ${MoveAniDuration}ms ${easeOutExpo} 0ms, 
-		top ${MoveAniDuration}ms ${easeOutExpo} 0ms`; 
+		left ${moveAniDuration}ms ${easeOutExpo} 0ms, 
+		top ${moveAniDuration}ms ${easeOutExpo} 0ms`; 
 
 	return new Promise(function(resolve, reject) {
 
-		if (MoveAniDuration > 0)
+		if (moveAniDuration > 0)
 		{
-			ATile.style.left = X + "px";
-			ATile.style.top = Y + "px";   
+			tile.style.left = x + "px";
+			tile.style.top = y + "px";   
 
-			ATile.ontransitionend = function() {
-				ATile.ontransitionend = undefined;
+			tile.ontransitionend = function() {
+				tile.ontransitionend = undefined;
 				resolve();
 			};
 
 		}
 		else {
-			ATile.style.left = X + "px";
-			ATile.style.top = Y + "px";
+			tile.style.left = x + "px";
+			tile.style.top = y + "px";
 			resolve();
 		}
 
 	});
 }
 
-function CheckPuzzleMatched()
+function checkPuzzleMatched()
 {
-	let LPuzzleMatched = true;
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)
+	let puzzleMatched = true;
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)
 		{
-			let TextNumber = Tiles[i].innerHTML;
+			let textNumber = tiles[i].innerHTML;
 
-			if ((TextNumber - 1) != ActualPosition(Tiles[i]))
+			if ((textNumber - 1) != actualPosition(tiles[i]))
 			{
-				LPuzzleMatched = false;
+				puzzleMatched = false;
 				break;
 			}
 		}
 
-	if (LPuzzleMatched && (Mode == TMode.Game))
+	if (puzzleMatched && (mode == Mode.Game))
 	{
-		Mode = (TMode.PuzzleMatched);
-		AnimatePuzzleMatched();
+		mode = (Mode.PuzzleMatched);
+		animatePuzzleMatched();
 	}
-	if ((! LPuzzleMatched) && ((Mode == TMode.PuzzleMatched) || (Mode == TMode.JustShuffled)))
+	if ((! puzzleMatched) && ((mode == Mode.PuzzleMatched) || (mode == Mode.JustShuffled)))
 	{
-		AnimateNormalizeTilesColor();
-		if (Mode == TMode.PuzzleMatched)
-			Mode = (TMode.GameOver);
+		animateNormalizeTilesColor();
+		if (mode == Mode.PuzzleMatched)
+			mode = (Mode.GameOver);
 	}
 }
 
 
 
-async function ButtonShuffleClick()
+async function buttonShuffleClick()
 {
-	AnimateNormalizeTilesColor();
+	animateNormalizeTilesColor();
 
-	let NewI = 0;
-	let MoveCount = Tiles.length * Tiles.length;
-	let MoveAniDuration = MaxMoveAniDuration;
-	for (let i = 1; i <= MoveCount; i++)
+	let newI = 0;
+	let moveCount = tiles.length * tiles.length;
+	let moveAniDuration = maxMoveAniDuration;
+	for (let i = 1; i <= moveCount; i++)
 	{
 		if (i <= 10)
-			MoveAniDuration = MinMoveAniDuration + Math.round(MaxMoveAniDuration * (1 - ( i  / 10)));
-		if (i >= MoveCount - 10)
-			MoveAniDuration = MinMoveAniDuration + Math.round((MaxMoveAniDuration / 2) * (1 - ( (MoveCount - i)  / 10)));
-		if ((i > 20) && (i < MoveCount - 20))
+			moveAniDuration = minMoveAniDuration + Math.round(maxMoveAniDuration * (1 - ( i  / 10)));
+		if (i >= moveCount - 10)
+			moveAniDuration = minMoveAniDuration + Math.round((maxMoveAniDuration / 2) * (1 - ( (moveCount - i)  / 10)));
+		if ((i > 20) && (i < moveCount - 20))
 			if ((i % 10) == 0)
-				MoveAniDuration = MinMoveAniDuration;
+				moveAniDuration = minMoveAniDuration;
 			else
-				MoveAniDuration = 0;
+				moveAniDuration = 0;
 		
-		let WasMoved;		
+		let wasMoved;		
 		do
 		{
-			NewI = Math.trunc(Math.random() * Tiles.length);
-			WasMoved = await TryMoveTile(NewI, MoveAniDuration, /*WaitAnimationEnd*/true);
+			newI = Math.trunc(Math.random() * tiles.length);
+			wasMoved = await tryMoveTile(newI, moveAniDuration, /*waitAnimationEnd*/true);
 		}
-		while (! WasMoved);
+		while (! wasMoved);
 
-		// console.log(Date.now() + " Move "  + String(i).padStart(3, '0') + " Delay " +  MoveAniDuration);
+		// console.log(Date.now() + " Move "  + String(i).padStart(3, '0') + " delay " +  moveAniDuration);
 	}
-	SetMaxTime();
-//  StopBlinkShuffle();
+	setMaxTime();
+//  stopBlinkShuffle();
 
-	Mode = (TMode.JustShuffled);
-	CheckPuzzleMatched();
+	mode = (Mode.JustShuffled);
+	checkPuzzleMatched();
 }
 
 
-function TimerTimeTimer()
+function timerTimeTimer()
 {
-	TimeRemaining = TimeRemaining - 1;
+	timeRemaining = timeRemaining - 1;
 
-	let Sec = (TimeRemaining % 60);
-	let Min = Math.trunc(TimeRemaining / 60);
+	let sec = (timeRemaining % 60);
+	let min = Math.trunc(timeRemaining / 60);
 
-	TextTime.innerHTML = Min + ":" + String(Sec).padStart(2, '0');
+	textTime.innerHTML = min + ":" + String(sec).padStart(2, '0');
 
-	if (TimeRemaining == 0)
+	if (timeRemaining == 0)
 	{
-		Mode = (TMode.GameOver);
-		AnimateTimeOver();
-//		StartBlinkShuffle();
+		mode = (Mode.GameOver);
+		animateTimeOver();
+//		startBlinkShuffle();
 		return;
 	}
-	if (TimeRemaining <= 10)
-		AnimateTimeRunningOut();
+	if (timeRemaining <= 10)
+		animateTimeRunningOut();
 
 }
 
 
-function SetMaxTime()
+function setMaxTime()
 {
-	TimeRemaining = Math.trunc((Base * Base * Base * Base) / 20) * 10;
+	timeRemaining = Math.trunc((base * base * base * base) / 20) * 10;
 
-	let Sec = (TimeRemaining % 60);
-	let Min = Math.trunc(TimeRemaining / 60);
+	let sec = (timeRemaining % 60);
+	let min = Math.trunc(timeRemaining / 60);
 
-	TextTime.innerHTML = Min + ":" + String(Sec).padStart(2, '0');
+	textTime.innerHTML = min + ":" + String(sec).padStart(2, '0');
 }
 
 
-function PanelClientResize()
+function panelClientResize()
 {
-	clearTimeout(TimerResize);
-	TimerResize = setTimeout(TimerResizeTimer, 200);
+	clearTimeout(timerResize);
+	timerResize = setTimeout(timerResizeTimer, 200);
 }
 
 
 
-function TimerResizeTimer()
+function timerResizeTimer()
 {
-	let TimeFromLastResize_ms = Date.now() - LastResizeTime;
+	let timeFromLastResize_ms = Date.now() - lastResizeTime;
 
-	if (TimeFromLastResize_ms > 1000)
+	if (timeFromLastResize_ms > 1000)
 	{
-		AnimatePlaceTilesFast();
-		LastResizeTime = Date.now();
+		animatePlaceTilesFast();
+		lastResizeTime = Date.now();
 	}
 }
 
@@ -529,148 +529,148 @@ function TimerResizeTimer()
 
 //-------------------------------   Animations   -----------------------------
 
-function CalcConsts()
+function calcConsts()
 {
-	let Height = parseInt(PanelClient.clientHeight);
-	let Width = parseInt(PanelClient.clientWidth);
+	let height = parseInt(panelClient.clientHeight);
+	let width = parseInt(panelClient.clientWidth);
 
-	if (Height > Width)
+	if (height > width)
 	{
-		SpaceX = Math.round((Width) / 20);
-		TileSize = Math.round(((Width - SpaceX * 2)) / Base);
-		SpaceY = SpaceX + Math.round(((Height - Width)) / 2);
+		spaceX = Math.round((width) / 20);
+		tileSize = Math.round(((width - spaceX * 2)) / base);
+		spaceY = spaceX + Math.round(((height - width)) / 2);
 	}
 	else
 	{
-		SpaceY = Math.round((Height) / 20);
-		TileSize = Math.round(((Height - SpaceY * 2)) / Base);
-		SpaceX = SpaceY + Math.round(((Width - Height)) / 2);
+		spaceY = Math.round((height) / 20);
+		tileSize = Math.round(((height - spaceY * 2)) / base);
+		spaceX = spaceY + Math.round(((width - height)) / 2);
 	}
-	TileSpacing = Math.round(TileSize * 0.06);
-	TileSize = Math.round(TileSize * 0.94);
-	SpaceX = SpaceX + Math.round((TileSpacing) / 2);
-	SpaceY = SpaceY + Math.round((TileSpacing) / 2);
+	tileSpacing = Math.round(tileSize * 0.06);
+	tileSize = Math.round(tileSize * 0.94);
+	spaceX = spaceX + Math.round((tileSpacing) / 2);
+	spaceY = spaceY + Math.round((tileSpacing) / 2);
 }
 
 
-function AnimatePrepareBeforePlace()
+function animatePrepareBeforePlace()
 {
-	CalcConsts();
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)
+	calcConsts();
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)
 		{
-			let Tile = Tiles[i];
-			let ScaleX = (TileSize) / Tile.offsetWidth;
-			let ScaleY = (TileSize) / Tile.offsetHeight;
+			let tile = tiles[i];
+			let scaleX = (tileSize) / tile.offsetWidth;
+			let scaleY = (tileSize) / tile.offsetHeight;
 
-			let Col = (i % Base);
-			let Row = Math.trunc(i / Base);
+			let col = (i % base);
+			let row = Math.trunc(i / base);
 			
-			let X = SpaceX + Math.round(Col * (Tile.offsetWidth * ScaleX + TileSpacing));
-			let Y = SpaceY + Math.round(Row * (Tile.offsetHeight * ScaleY + TileSpacing));
+			let x = spaceX + Math.round(col * (tile.offsetWidth * scaleX + tileSpacing));
+			let y = spaceY + Math.round(row * (tile.offsetHeight * scaleY + tileSpacing));
 
-			Tile.style.transition = "0ms";
-			Tile.style.transform = "scaleX(0.1) scaleY(0.5) rotate(45deg)";
+			tile.style.transition = "0ms";
+			tile.style.transform = "scaleX(0.1) scaleY(0.5) rotate(45deg)";
 
-			Tile.style.opacity = 0;
-			Tile.style.left = (X + Math.round((TileSize) / 2)) + "px";
-			Tile.style.top = (Y + TileSize) + "px";
+			tile.style.opacity = 0;
+			tile.style.left = (x + Math.round((tileSize) / 2)) + "px";
+			tile.style.top = (y + tileSize) + "px";
 		}
 
 	setTimeout(function() 
 	{  
-		for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)
+		for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)
 			{
-				let Tile = Tiles[i];
+				let tile = tiles[i];
 				let delay = 30 * i; //delay for tile
 
-				Tile.style.transition = `all 200ms linear 0ms,
+				tile.style.transition = `all 200ms linear 0ms,
 					transform 200ms linear ${delay}ms, 
 					left 200ms linear ${delay}ms, 
 					top 100ms linear ${delay}ms, 
 					opacity 400ms linear ${100 + delay}ms`;
 
-				Tile.style.transform = "rotate(45deg)";
-				Tile.style.opacity = 1;
+				tile.style.transform = "rotate(45deg)";
+				tile.style.opacity = 1;
 			}
 	}, 20);
 }
 
-let ScaleSettings;
+let scaleSettings;
 
-function AnimatePlaceTilesFast()
+function animatePlaceTilesFast()
 {
-	CalcConsts();
+	calcConsts();
 
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)
 		{
-			let Tile = Tiles[i];
+			let tile = tiles[i];
 			let delay = 30 * i; //delay for tile
 
-			let ScaleX = (TileSize) / Tile.offsetWidth;
-			let ScaleY = (TileSize) / Tile.offsetHeight;
+			let scaleX = (tileSize) / tile.offsetWidth;
+			let scaleY = (tileSize) / tile.offsetHeight;
 
-			let OffsetOnScaledTile = (TileSize - Tile.offsetWidth) / 2;
+			let offsetOnScaledTile = (tileSize - tile.offsetWidth) / 2;
 
-			Tile.style.transition = `all 200ms linear 0ms,
+			tile.style.transition = `all 200ms linear 0ms,
 				transform 200ms linear ${100 + delay}ms, 
 				left 200ms linear ${delay}ms, 
 				top 100ms linear ${delay}ms, 
 				opacity 400ms linear ${100 + delay}ms`;
 
-			ScaleSettings = "scale(" + ScaleX + ")";
-			Tile.style.transform = ScaleSettings;
+			scaleSettings = "scale(" + scaleX + ")";
+			tile.style.transform = scaleSettings;
 
-			let Col = (i % Base);
-			let Row = Math.trunc(i / Base);
+			let col = (i % base);
+			let row = Math.trunc(i / base);
 
-			let X = SpaceX + Math.round(Col * (Tile.offsetWidth * ScaleX + TileSpacing) + OffsetOnScaledTile);
-			let Y = SpaceY + Math.round(Row * (Tile.offsetHeight * ScaleY + TileSpacing) + OffsetOnScaledTile);
+			let x = spaceX + Math.round(col * (tile.offsetWidth * scaleX + tileSpacing) + offsetOnScaledTile);
+			let y = spaceY + Math.round(row * (tile.offsetHeight * scaleY + tileSpacing) + offsetOnScaledTile);
 
-			Tile.style.left = X + "px";
-			Tile.style.top = Y + "px";   
+			tile.style.left = x + "px";
+			tile.style.top = y + "px";   
 		}
 }
 
 
-async function AnimateTilesDisappeare()
+async function animateTilesDisappeare()
 {
-	let LastTile;
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)
+	let lastTile;
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)
 		{
-			let Tile = Tiles[i];
+			let tile = tiles[i];
 			let delay = 30 * i; //delay for tile
 
-			Tile.style.transition = `all 200ms linear 0ms,
+			tile.style.transition = `all 200ms linear 0ms,
 				transform 400ms linear ${delay}ms, 
 				left 400ms linear ${delay}ms, 
 				top 400ms ${easeInBack} ${delay}ms, 
 				opacity 400ms linear ${100 + delay}ms`;
 				
-			Tile.style.transform = "scale(0.1) rotate(45deg)";
+			tile.style.transform = "scale(0.1) rotate(45deg)";
 
-			Tile.style.opacity = 0;
+			tile.style.opacity = 0;
 
-			let OffsetOnScaledTile = (TileSize - Tile.offsetWidth) / 2;
+			let offsetOnScaledTile = (tileSize - tile.offsetWidth) / 2;
 
-			let CurX = parseInt(Tile.style.left) - OffsetOnScaledTile;
-			let CurY = parseInt(Tile.style.top) - OffsetOnScaledTile;
-			Tile.style.left = Math.round(CurX + ((TileSize) / 2)) + "px";
-			Tile.style.top = Math.round(CurY + TileSize) + "px";
+			let curX = parseInt(tile.style.left) - offsetOnScaledTile;
+			let curY = parseInt(tile.style.top) - offsetOnScaledTile;
+			tile.style.left = Math.round(curX + ((tileSize) / 2)) + "px";
+			tile.style.top = Math.round(curY + tileSize) + "px";
 
-			LastTile = Tile;
+			lastTile = tile;
 		}
 
 	return new Promise(function(resolve, reject) 
 	{
-		if (LastTile != undefined)
+		if (lastTile != undefined)
 		{
-			LastTile.ontransitionend = function() 
+			lastTile.ontransitionend = function() 
 			{
-				LastTile.ontransitionend = undefined;
+				lastTile.ontransitionend = undefined;
 				resolve();
 			}
 		} else
@@ -681,38 +681,38 @@ async function AnimateTilesDisappeare()
 
 
 
-let BaseNotChangedAni = 0;
-function AnimateBaseNotChanged()
+let baseNotChangedAni = 0;
+function animateBaseNotChanged()
 {
-	switch (BaseNotChangedAni) {
+	switch (baseNotChangedAni) {
 		case 0:
-			AnimateBaseNotChanged1();
+			animateBaseNotChanged1();
 			break;
 		default:
-			AnimateBaseNotChanged2();
+			animateBaseNotChanged2();
 			break;
 	}
 
-	BaseNotChangedAni = (++BaseNotChangedAni) % 2;
+	baseNotChangedAni = (++baseNotChangedAni) % 2;
 }
 
 
-function AnimateBaseNotChanged1()
+function animateBaseNotChanged1()
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)		{
-			let Tile = Tiles[i];
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)		{
+			let tile = tiles[i];
 
-			Tile.style.transition = `transform 100ms linear 0ms`;
-			Tile.style.transform = ScaleSettings + " rotate(-20deg)";
+			tile.style.transition = `transform 100ms linear 0ms`;
+			tile.style.transform = scaleSettings + " rotate(-20deg)";
 			setTimeout(function() 
 			{
-				Tile.style.transition = `transform 250ms ${easeInOutExpo} 0ms`;
-				Tile.style.transform = ScaleSettings + " rotate(20deg)";
+				tile.style.transition = `transform 250ms ${easeInOutExpo} 0ms`;
+				tile.style.transform = scaleSettings + " rotate(20deg)";
 				setTimeout(function() 
 				{
-					Tile.style.transition = `transform 250ms ${easeOutBack} 0ms`;
-					Tile.style.transform = ScaleSettings;
+					tile.style.transition = `transform 250ms ${easeOutBack} 0ms`;
+					tile.style.transform = scaleSettings;
 				} , 250);        
 			} , 100);
 		}
@@ -720,25 +720,25 @@ function AnimateBaseNotChanged1()
 
 
 
-function AnimateBaseNotChanged2()
+function animateBaseNotChanged2()
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)		{
-			let Tile = Tiles[i];
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)		{
+			let tile = tiles[i];
 			let delay = 30 * i; //delay for tile
 
-			let ScaleX = (TileSize) / Tile.offsetWidth;
+			let scaleX = (tileSize) / tile.offsetWidth;
 
-			Tile.style.transition = `all 200ms linear 0ms,
+			tile.style.transition = `all 200ms linear 0ms,
 				transform 300ms ${easeInBack} ${delay}ms`; 
 
-			Tile.style.transform = "scale(" + (ScaleX / 2) + ")";
+			tile.style.transform = "scale(" + (scaleX / 2) + ")";
 			setTimeout(function() 
 			{
-				Tile.style.transition = `all 200ms linear 0ms,
+				tile.style.transition = `all 200ms linear 0ms,
 					transform 300ms ${easeOutBack} 0ms`, 
 
-				Tile.style.transform = ScaleSettings;
+				tile.style.transform = scaleSettings;
 			}, 300 + delay) ;
 		}
 }
@@ -747,107 +747,107 @@ function AnimateBaseNotChanged2()
 
 
 
-function AnimateTimeRunningOut()
+function animateTimeRunningOut()
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)		{
-			let Tile = Tiles[i];
-			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, /*darkorange*/'0xFF8C00', 150);
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)		{
+			let tile = tiles[i];
+			animateGradient(tile, tile.curColor1, tile.curColor2, tileFillNormalColor1, /*darkorange*/'0xFF8C00', 150);
 
 			setTimeout(function() {
-				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, TileFillNormalColor2, 150);
+				animateGradient(tile, tile.curColor1, tile.curColor2, tileFillNormalColor1, tileFillNormalColor2, 150);
 			} , 150);
 		}
 }
 
 
-function AnimateTimeOver()
+function animateTimeOver()
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)		{
-			let Tile = Tiles[i];
-			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*red*/'0xFF0000', /*red*/'0xFF0000', 600);
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)		{
+			let tile = tiles[i];
+			animateGradient(tile, tile.curColor1, tile.curColor2, /*red*/'0xFF0000', /*red*/'0xFF0000', 600);
 
 			setTimeout(function() {
-				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*gray*/'0x808080', /*red*/'0xFF0000', 600);
+				animateGradient(tile, tile.curColor1, tile.curColor2, /*gray*/'0x808080', /*red*/'0xFF0000', 600);
 			} , 300 + 30 * i);
 		}
 }
 
 
 
-function AnimateNormalizeTilesColor()
+function animateNormalizeTilesColor()
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)		{
-			let Tile = Tiles[i];
-			Tile.style.transition = `all 200ms linear 0ms,
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)		{
+			let tile = tiles[i];
+			tile.style.transition = `all 200ms linear 0ms,
 				transform 0ms linear 0ms`;
-			Tile.style.transform = ScaleSettings;
+			tile.style.transform = scaleSettings;
 
-			AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, TileFillNormalColor1, TileFillNormalColor2, 500);
+			animateGradient(tile, tile.curColor1, tile.curColor2, tileFillNormalColor1, tileFillNormalColor2, 500);
 		}
 }
 
 
-function AnimatePuzzleMatched()
+function animatePuzzleMatched()
 {
-	for (let i = 0; i < Tiles.length; i++)
-		if (Tiles[i] != undefined)		{
-			let Tile = Tiles[i];
-			Tile.style.transition = `all 200ms linear 0ms,
+	for (let i = 0; i < tiles.length; i++)
+		if (tiles[i] != undefined)		{
+			let tile = tiles[i];
+			tile.style.transition = `all 200ms linear 0ms,
 				transform 1000ms ${easeOutBack} 350ms`;
-			Tile.style.transform = ScaleSettings + " rotate(360deg)";
+			tile.style.transform = scaleSettings + " rotate(360deg)";
 
 			setTimeout(function() {
-				AnimateGradient(Tile, Tile.CurColor1, Tile.CurColor2, /*lawngreen*/'0x7CFC00', /*gold*/'0xFFD700', 600);
+				animateGradient(tile, tile.curColor1, tile.curColor2, /*lawngreen*/'0x7CFC00', /*gold*/'0xFFD700', 600);
 			} , 300 + 30 * i);
 		}
 }
 
 //-----------------------------   Realization of Gradient Animation    -----------------------------
 
-function InterpolateColor(Start, Stop, T)
+function interpolateColor(start, stop, T)
 {
-	// let Alpha = ( Start.alpha + ((Stop.alpha   - Start.alpha) * T));
-	let Red   = Math.trunc( Start.Red   + ((Stop.Red     - Start.Red  ) * T));
-	let Green = Math.trunc( Start.Green + ((Stop.Green   - Start.Green) * T));
-	let Blue  = Math.trunc( Start.Blue  + ((Stop.Blue    - Start.Blue ) * T));
-	let Result = {"Red" : Red, "Green" : Green, "Blue" : Blue};
-	return Result;
+	// let Alpha = ( start.alpha + ((stop.alpha   - start.alpha) * T));
+	let red   = Math.trunc( start.red   + ((stop.red     - start.red  ) * T));
+	let green = Math.trunc( start.green + ((stop.green   - start.green) * T));
+	let blue  = Math.trunc( start.blue  + ((stop.blue    - start.blue ) * T));
+	let result = {"red" : red, "green" : green, "blue" : blue};
+	return result;
 }
 
 
-function ColorIntToObj(ColorInt)
+function colorIntToObj(colorInt)
 {
-	let Red =		(ColorInt >> 16) & 0xFF;
-	let Green =		(ColorInt >> 8) & 0xFF;
-	let Blue =		ColorInt & 0xFF;
-	let Result = {"Red" : Red, "Green" : Green, "Blue" : Blue};
-	return Result;
+	let red =		(colorInt >> 16) & 0xFF;
+	let green =		(colorInt >> 8) & 0xFF;
+	let blue =		colorInt & 0xFF;
+	let result = {"red" : red, "green" : green, "blue" : blue};
+	return result;
 }
 
-function AnimateGradient(Target, StartColor1, StartColor2, StopColor1, StopColor2, Duration_ms)
+function animateGradient(target, startColor1, startColor2, stopColor1, stopColor2, duration_ms)
 {
-	StartColor1 = ColorIntToObj(StartColor1);
-	StartColor2 = ColorIntToObj(StartColor2);
+	startColor1 = colorIntToObj(startColor1);
+	startColor2 = colorIntToObj(startColor2);
 
-	StopColor1 = ColorIntToObj(StopColor1);
-	StopColor2 = ColorIntToObj(StopColor2);
+	stopColor1 = colorIntToObj(stopColor1);
+	stopColor2 = colorIntToObj(stopColor2);
 	
 	let start = performance.now();
 
 	requestAnimationFrame(function animate(time) 
 	{
-		let timeFraction = (time - start) / Duration_ms;
+		let timeFraction = (time - start) / duration_ms;
 		if (timeFraction > 1) timeFraction = 1;
 
-		let NormalizedTime = (timeFraction);
+		let normalizedTime = (timeFraction);
 
-		let CurColor1 = InterpolateColor(StartColor1, StopColor1, NormalizedTime);
-		let CurColor2 = InterpolateColor(StartColor2, StopColor2, NormalizedTime);
+		let curColor1 = interpolateColor(startColor1, stopColor1, normalizedTime);
+		let curColor2 = interpolateColor(startColor2, stopColor2, normalizedTime);
 
-		SetGradient(Target, CurColor1, CurColor2);
+		setGradient(target, curColor1, curColor2);
 
 		if (timeFraction < 1) {
 			requestAnimationFrame(animate);
@@ -857,71 +857,71 @@ function AnimateGradient(Target, StartColor1, StartColor2, StopColor1, StopColor
 }
 
 
-function SetGradient(Target, CurColor1, CurColor2)
+function setGradient(target, curColor1, curColor2)
 {
-	let sCurColor1 = `rgb(${CurColor1.Red}, ${CurColor1.Green}, ${CurColor1.Blue})`;
-	let sCurColor2 = `rgb(${CurColor2.Red}, ${CurColor2.Green}, ${CurColor2.Blue})`;
+	let sCurColor1 = `rgb(${curColor1.red}, ${curColor1.green}, ${curColor1.blue})`;
+	let sCurColor2 = `rgb(${curColor2.red}, ${curColor2.green}, ${curColor2.blue})`;
 
-	Target.style.background = `linear-gradient(145deg, ${sCurColor1} 35%, ${sCurColor2} 90%)`;
+	target.style.background = `linear-gradient(145deg, ${sCurColor1} 35%, ${sCurColor2} 90%)`;
 
-	Target.CurColor1 = (CurColor1.Red << 16) + (CurColor1.Green << 8) + CurColor1.Blue;
-	Target.CurColor2 = (CurColor2.Red << 16) + (CurColor2.Green << 8) + CurColor2.Blue;
+	target.curColor1 = (curColor1.red << 16) + (curColor1.green << 8) + curColor1.blue;
+	target.curColor2 = (curColor2.red << 16) + (curColor2.green << 8) + curColor2.blue;
 }
 
 //-----------------------------   -----------------------------	-----------------------------
 
-function AnimatePrepPlaceTiles()
+function animatePrepPlaceTiles()
 {
-	AnimateNormalizeTilesColor();
-	AnimatePrepareBeforePlace();
-	setTimeout(AnimatePlaceTilesFast, 20);
-	// PanelDebug.style.display = "block"
+	animateNormalizeTilesColor();
+	animatePrepareBeforePlace();
+	setTimeout(animatePlaceTilesFast, 20);
+	// panelDebug.style.display = "block"
 }
 
-let LastTapTime;
+let lastTapTime;
 
-PanelClient.onmousedown = function(event) 
+panelClient.onmousedown = function(event) 
 {
-	// console.log(Date.now() + " PanelClient.onmousedown " + ` event.target ${event.target.className}` );	
+	// console.log(Date.now() + " panelClient.onmousedown " + ` event.target ${event.target.className}` );	
 
-	PanelClientOnClick(event);
+	panelClientOnClick(event);
 }
 
-PanelClient.ontouchstart = function(event) {
-	// console.log(Date.now() + " PanelClient.ontouchstart " + ` event.target ${event.target.className}` );	
+panelClient.ontouchstart = function(event) {
+	// console.log(Date.now() + " panelClient.ontouchstart " + ` event.target ${event.target.className}` );	
 	event.preventDefault(); 
-	PanelClientOnClick(event);
+	panelClientOnClick(event);
 }
 
-function PanelClientOnClick(event) {
-	if (event.target != PanelClient) return;
+function panelClientOnClick(event) {
+	if (event.target != panelClient) return;
 
-	let TimeFromLastTap_ms = Date.now() - LastTapTime;
+	let timeFromLastTap_ms = Date.now() - lastTapTime;
 
-	if ((LastTapTime != undefined) && (TimeFromLastTap_ms < 300))
-	  ShowDebug();
+	if ((lastTapTime != undefined) && (timeFromLastTap_ms < 300))
+	  showDebug();
 
-	LastTapTime = Date.now();
+	lastTapTime = Date.now();
 }
 
-let PanelClientVisible = false;
+let panelClientVisible = false;
 
-function ShowDebug(el) {
-	PanelClientVisible = ! PanelClientVisible;
-	PanelDebug.style.display = PanelClientVisible ? "flex" : "none";
-	WindowResize();
+function showDebug(el) {
+	panelClientVisible = ! panelClientVisible;
+	panelDebug.style.display = panelClientVisible ? "flex" : "none";
+	windowResize();
 }
 
-//-----------------------------  ClosingAnimation ported, but don't work in browser  	-----------------------------
+//-----------------------------  closingAnimation ported, but don't work in browser  	-----------------------------
 
-let ClosingAnimation = false;
+let closingAnimation = false;
 window.onclose = closeEvent;
 function closeEvent(event)
 {
-	if (! ClosingAnimation)
+	if (! closingAnimation)
 	{
-		AnimateTilesDisappeare();
-		ClosingAnimation = true;
+		animateTilesDisappeare();
+		closingAnimation = true;
 	}
 }
 
