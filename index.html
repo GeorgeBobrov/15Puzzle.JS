@@ -148,8 +148,7 @@ let textTime = document.getElementById('textTime');
 
 window.onresize = windowResize;
 function windowResize() {
-	let newHeight = parseInt(window.innerHeight) - parseInt(panelMenu.clientHeight) - 
-		parseInt(panelDebug.clientHeight);
+	let newHeight = window.innerHeight - panelMenu.clientHeight - panelDebug.clientHeight;
 	panelClient.style.height = newHeight + "px";
 };
 windowResize();
@@ -235,16 +234,16 @@ function timerCreateTilesTimer()
 function createTiles()
 {
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)
-			{
-				tiles[i].remove();
-				tiles[i] = undefined;
-			}
+		if (tiles[i])
+		{
+			tiles[i].remove();
+			tiles[i] = undefined;
+		}
 
 	tiles.length = (base * base);
 	for (let i = 0; i < tiles.length - 1; i++)
 	{
-		if (tiles[i] == undefined)
+		if (!tiles[i])
 		{
 			let newTile = document.createElement('div');
 
@@ -269,7 +268,7 @@ function createTiles()
 		}
 	}
 
-	if (tiles[tiles.length - 1] != undefined)
+	if (tiles[tiles.length - 1])
 		tiles[tiles.length - 1] = undefined;
 }
 
@@ -410,7 +409,7 @@ function checkPuzzleMatched()
 {
 	let puzzleMatched = true;
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)
+		if (tiles[i])
 		{
 			let textNumber = tiles[i].innerHTML;
 
@@ -531,8 +530,8 @@ function timerResizeTimer()
 
 function calcConsts()
 {
-	let height = parseInt(panelClient.clientHeight);
-	let width = parseInt(panelClient.clientWidth);
+	let height = panelClient.clientHeight;
+	let width = panelClient.clientWidth;
 
 	if (height > width)
 	{
@@ -557,7 +556,7 @@ function animatePrepareBeforePlace()
 {
 	calcConsts();
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)
+		if (tiles[i])
 		{
 			let tile = tiles[i];
 			let scaleX = (tileSize) / tile.offsetWidth;
@@ -580,7 +579,7 @@ function animatePrepareBeforePlace()
 	setTimeout(function() 
 	{  
 		for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)
+		if (tiles[i])
 			{
 				let tile = tiles[i];
 				let delay = 30 * i; //delay for tile
@@ -604,7 +603,7 @@ function animatePlaceTilesFast()
 	calcConsts();
 
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)
+		if (tiles[i])
 		{
 			let tile = tiles[i];
 			let delay = 30 * i; //delay for tile
@@ -639,7 +638,7 @@ async function animateTilesDisappeare()
 {
 	let lastTile;
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)
+		if (tiles[i])
 		{
 			let tile = tiles[i];
 			let delay = 30 * i; //delay for tile
@@ -666,7 +665,7 @@ async function animateTilesDisappeare()
 
 	return new Promise(function(resolve, reject) 
 	{
-		if (lastTile != undefined)
+		if (lastTile)
 		{
 			lastTile.ontransitionend = function() 
 			{
@@ -700,7 +699,8 @@ function animateBaseNotChanged()
 function animateBaseNotChanged1()
 {
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)		{
+		if (tiles[i])
+		{
 			let tile = tiles[i];
 
 			tile.style.transition = `transform 100ms linear 0ms`;
@@ -723,7 +723,8 @@ function animateBaseNotChanged1()
 function animateBaseNotChanged2()
 {
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)		{
+		if (tiles[i])
+		{
 			let tile = tiles[i];
 			let delay = 30 * i; //delay for tile
 
@@ -750,7 +751,8 @@ function animateBaseNotChanged2()
 function animateTimeRunningOut()
 {
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)		{
+		if (tiles[i])
+		{
 			let tile = tiles[i];
 			animateGradient(tile, tile.curColor1, tile.curColor2, tileFillNormalColor1, /*darkorange*/'0xFF8C00', 150);
 
@@ -764,7 +766,8 @@ function animateTimeRunningOut()
 function animateTimeOver()
 {
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)		{
+		if (tiles[i])
+		{
 			let tile = tiles[i];
 			animateGradient(tile, tile.curColor1, tile.curColor2, /*red*/'0xFF0000', /*red*/'0xFF0000', 600);
 
@@ -779,7 +782,8 @@ function animateTimeOver()
 function animateNormalizeTilesColor()
 {
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)		{
+		if (tiles[i])
+		{
 			let tile = tiles[i];
 			tile.style.transition = `all 200ms linear 0ms,
 				transform 0ms linear 0ms`;
@@ -793,7 +797,8 @@ function animateNormalizeTilesColor()
 function animatePuzzleMatched()
 {
 	for (let i = 0; i < tiles.length; i++)
-		if (tiles[i] != undefined)		{
+		if (tiles[i])
+		{
 			let tile = tiles[i];
 			tile.style.transition = `all 200ms linear 0ms,
 				transform 1000ms ${easeOutBack} 350ms`;
@@ -898,7 +903,7 @@ function panelClientOnClick(event) {
 
 	let timeFromLastTap_ms = Date.now() - lastTapTime;
 
-	if ((lastTapTime != undefined) && (timeFromLastTap_ms < 300))
+	if ((lastTapTime) && (timeFromLastTap_ms < 300))
 	  showDebug();
 
 	lastTapTime = Date.now();
