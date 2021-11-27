@@ -569,11 +569,14 @@ function animatePrepareBeforePlace()
 			let y = spaceY + Math.round(row * (tile.offsetHeight * scaleY + tileSpacing));
 
 			tile.style.transition = "0ms";
-			tile.style.transform = "scaleX(0.1) scaleY(0.5) rotate(45deg)";
+			tile.style.transform = "scale(0.01) rotate(45deg)";
 
 			tile.style.opacity = 0;
 			tile.style.left = (x + Math.round((tileSize) / 2)) + "px";
 			tile.style.top = (y + tileSize) + "px";
+			//place all tiles from corner
+			tile.style.left = tiles[0].style.left;
+			tile.style.top = tiles[0].style.top;
 		}
 
 	setTimeout(function() 
