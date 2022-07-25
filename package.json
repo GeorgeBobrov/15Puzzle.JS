@@ -1,0 +1,23 @@
+{
+  "name": "15puzzle",
+  "version": "1.0.0",
+  "description": "15Puzzle game on JavaScript",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeorgeBobrov/15Puzzle.JS.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GeorgeBobrov/15Puzzle.JS/issues"
+  },
+  "homepage": "https://github.com/GeorgeBobrov/15Puzzle.JS#readme",
+  "devDependencies": {
+    "eslint": "^7.21.0",
+    "eslint-plugin-html": "^6.2.0"
+  }
+}

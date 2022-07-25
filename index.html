@@ -49,8 +49,7 @@ body {
 	background-color: rgb(228, 228, 228);  
 }  
 
-.panelButtonsBase
-{
+.panelButtonsBase {
 	width: 33%;
 	padding: 0.1rem 0;
 	display: flex;
@@ -83,8 +82,14 @@ body {
 	margin: 2px 0;  
 }
 
-.panelDebug{
+.panelDebug {
 	margin: -2px auto;  
+}
+
+.buttonShuffle {
+	display: flex; 
+	align-items: center; 
+	gap: 5px;
 }
 
 @media only screen and (max-width: 720px) {
@@ -119,7 +124,12 @@ body {
 
 	<div class="panelMenu" id="panelMenu">
 		<div id="textTime">textTime</div>
-		<button class="buttonMenu buttonShuffle" onclick="buttonShuffleClick(this)">Shuffle</button> 
+		<button class="buttonMenu buttonShuffle" onclick="buttonShuffleClick(this)">
+			<svg viewBox="0 0 24 24" focusable="false" style="height:80%"> 
+				<path fill="#8B7EA8" d="M12,6v3l4,-4 -4,-4v3c-4.42,0 -8,3.58 -8,8 0,1.57 0.46,3.03 1.24,4.26L6.7,14.8c-0.45,-0.83 -0.7,-1.79 -0.7,-2.8 0,-3.31 2.69,-6 6,-6zM18.76,7.74L17.3,9.2c0.44,0.84 0.7,1.79 0.7,2.8 0,3.31 -2.69,6 -6,6v-3l-4,4 4,4v-3c4.42,0 8,-3.58 8,-8 0,-1.57 -0.46,-3.03 -1.24,-4.26z"></path>
+			</svg>			
+			Shuffle
+		</button> 
 
 		<div class="panelButtonsBase">
 			<button class="buttonMenu" onclick="changeBaseClick(this)">3x3</button>
@@ -137,6 +147,9 @@ body {
 	</div>  
 
 <script>
+/* eslint eqeqeq:0*/
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-global-assign */
 
 let panelClient = document.createElement('div');
 document.body.appendChild(panelClient);
@@ -150,7 +163,7 @@ window.onresize = windowResize;
 function windowResize() {
 	let newHeight = window.innerHeight - panelMenu.clientHeight - panelDebug.clientHeight;
 	panelClient.style.height = newHeight + "px";
-};
+}
 windowResize();
 
 new ResizeObserver(panelClientResize).observe(panelClient);
@@ -165,6 +178,8 @@ let spaceX, spaceY;
 
 let fBase;
 
+
+/*global base*/
 Object.defineProperty(this, "base", {
 	get() { return fBase; },
 	set: setBase
@@ -173,11 +188,12 @@ Object.defineProperty(this, "base", {
 const Mode = Object.freeze({"Game":1, "GameOver":2, "JustShuffled":3, "PuzzleMatched":4});
 let fMode;
 
+/*global mode*/
 Object.defineProperty(this, "mode", {
 	get() { return fMode; },
 	set: setMode
 });
-						
+
 let slowdown = 1.0;
 const maxMoveAniDuration = 150;
 const minMoveAniDuration = 1;
@@ -185,7 +201,7 @@ const tileFillNormalColor1 = 0xFFE4C4; //bisque:'#FFE4C4'
 const tileFillNormalColor2 = 0xABE024; //'#ABE024';
 
 const easeOutBack = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-const easeInBack  =	'cubic-bezier(0.6, -0.28, 0.735, 0.045)';
+const easeInBack =	'cubic-bezier(0.6, -0.28, 0.735, 0.045)';
 const easeInOutBack	= 'cubic-bezier(0.68, -0.55, 0.265, 1.55)';
 const easeOutExpo = 'cubic-bezier(0.19, 1, 0.22, 1)';
 const easeInOutExpo = 'cubic-bezier(1, 0, 0, 1)';
@@ -226,8 +242,8 @@ function timerCreateTilesTimer()
 {
 	createTiles();
 	animatePrepareBeforePlace();
-	
-	setTimeout(animatePlaceTilesFast, 20); 
+
+	setTimeout(animatePlaceTilesFast, 20);
 }
 
 
@@ -251,11 +267,11 @@ function createTiles()
 
 			newTile.classList.add('tile');
 
-			newTile.onmousedown  = function(event) { tileOnClick(this) }; 
+			newTile.onmousedown = function(event) { tileOnClick(this) };
 
-			newTile.ontouchstart = function(event) 
+			newTile.ontouchstart = function(event)
 			{
-				event.preventDefault(); 
+				event.preventDefault();
 				tileOnClick(this)
 			};
 
@@ -263,7 +279,7 @@ function createTiles()
 			newTile.curColor2 = tileFillNormalColor2;
 
 			panelClient.appendChild(newTile);
-//      newTile.SendToBack;
+			// newTile.SendToBack;
 			tiles[i] = newTile;
 		}
 	}
@@ -273,7 +289,7 @@ function createTiles()
 }
 
 
-function  setMode(value)
+function setMode(value)
 {
 	fMode = value;
 	if (mode == Mode.Game)
@@ -283,7 +299,7 @@ function  setMode(value)
 }
 
 
-function  ind(row, col)
+function ind(row, col)
 {
 	return row * base + col;
 }
@@ -296,7 +312,7 @@ function actualPosition(tile)
 	return 0;
 }
 
-async function tileOnClick(senderTile) 
+async function tileOnClick(senderTile)
 {
 	if (mode == Mode.JustShuffled)
 		mode = (Mode.Game);
@@ -305,9 +321,9 @@ async function tileOnClick(senderTile)
 	let wasMoved = await tryMoveTile(actualPosition(senderTile), maxMoveAniDuration, false);
 	if (wasMoved)
 		checkPuzzleMatched();
-};
+}
 
-async function  tryMoveTile(tilePosition, moveAniDuration, waitAnimationEnd)
+async function tryMoveTile(tilePosition, moveAniDuration, waitAnimationEnd)
 {
 	let wasMoved = false;
 
@@ -360,8 +376,8 @@ async function  tryMoveTile(tilePosition, moveAniDuration, waitAnimationEnd)
 		if (waitAnimationEnd)
 			await animateMoveTile(tiles[newPosition], moveAniDuration);
 		else
-			animateMoveTile(tiles[newPosition], moveAniDuration);	
-	};
+			animateMoveTile(tiles[newPosition], moveAniDuration);
+	}
 
 }
 
@@ -374,21 +390,21 @@ async function animateMoveTile(tile, moveAniDuration)
 	let newRow = Math.trunc(actPos / base);
 
 	let offsetOnScaledTile = (tileSize - tile.offsetWidth) / 2;
- 
+
 	let x = spaceX + Math.round(newCol * (tileSize + tileSpacing) + offsetOnScaledTile);
 	let y = spaceY + Math.round(newRow * (tileSize + tileSpacing) + offsetOnScaledTile);
 
-	tile.style.transition = 
+	tile.style.transition =
 		`all 200ms linear 0ms,
 		left ${moveAniDuration}ms ${easeOutExpo} 0ms, 
-		top ${moveAniDuration}ms ${easeOutExpo} 0ms`; 
+		top ${moveAniDuration}ms ${easeOutExpo} 0ms`;
 
 	return new Promise(function(resolve, reject) {
 
 		if (moveAniDuration > 0)
 		{
 			tile.style.left = x + "px";
-			tile.style.top = y + "px";   
+			tile.style.top = y + "px";
 
 			tile.ontransitionend = function() {
 				tile.ontransitionend = undefined;
@@ -445,16 +461,16 @@ async function buttonShuffleClick()
 	for (let i = 1; i <= moveCount; i++)
 	{
 		if (i <= 10)
-			moveAniDuration = minMoveAniDuration + Math.round(maxMoveAniDuration * (1 - ( i  / 10)));
+			moveAniDuration = minMoveAniDuration + Math.round(maxMoveAniDuration * (1 - ( i / 10)));
 		if (i >= moveCount - 10)
-			moveAniDuration = minMoveAniDuration + Math.round((maxMoveAniDuration / 2) * (1 - ( (moveCount - i)  / 10)));
+			moveAniDuration = minMoveAniDuration + Math.round((maxMoveAniDuration / 2) * (1 - ( (moveCount - i) / 10)));
 		if ((i > 20) && (i < moveCount - 20))
 			if ((i % 10) == 0)
 				moveAniDuration = minMoveAniDuration;
 			else
 				moveAniDuration = 0;
-		
-		let wasMoved;		
+
+		let wasMoved;
 		do
 		{
 			newI = Math.trunc(Math.random() * tiles.length);
@@ -465,7 +481,7 @@ async function buttonShuffleClick()
 		// console.log(Date.now() + " Move "  + String(i).padStart(3, '0') + " delay " +  moveAniDuration);
 	}
 	setMaxTime();
-//  stopBlinkShuffle();
+	//  stopBlinkShuffle();
 
 	mode = (Mode.JustShuffled);
 	checkPuzzleMatched();
@@ -485,7 +501,7 @@ function timerTimeTimer()
 	{
 		mode = (Mode.GameOver);
 		animateTimeOver();
-//		startBlinkShuffle();
+		// startBlinkShuffle();
 		return;
 	}
 	if (timeRemaining <= 10)
@@ -564,7 +580,7 @@ function animatePrepareBeforePlace()
 
 			let col = (i % base);
 			let row = Math.trunc(i / base);
-			
+
 			let x = spaceX + Math.round(col * (tile.offsetWidth * scaleX + tileSpacing));
 			let y = spaceY + Math.round(row * (tile.offsetHeight * scaleY + tileSpacing));
 
@@ -579,10 +595,10 @@ function animatePrepareBeforePlace()
 			tile.style.top = tiles[0].style.top;
 		}
 
-	setTimeout(function() 
-	{  
+	setTimeout(function()
+	{
 		for (let i = 0; i < tiles.length; i++)
-		if (tiles[i])
+			if (tiles[i])
 			{
 				let tile = tiles[i];
 				let delay = 30 * i; //delay for tile
@@ -632,7 +648,7 @@ function animatePlaceTilesFast()
 			let y = spaceY + Math.round(row * (tile.offsetHeight * scaleY + tileSpacing) + offsetOnScaledTile);
 
 			tile.style.left = x + "px";
-			tile.style.top = y + "px";   
+			tile.style.top = y + "px";
 		}
 }
 
@@ -651,7 +667,7 @@ async function animateTilesDisappeare()
 				left 400ms linear ${delay}ms, 
 				top 400ms ${easeInBack} ${delay}ms, 
 				opacity 400ms linear ${100 + delay}ms`;
-				
+
 			tile.style.transform = "scale(0.1) rotate(45deg)";
 
 			tile.style.opacity = 0;
@@ -666,11 +682,11 @@ async function animateTilesDisappeare()
 			lastTile = tile;
 		}
 
-	return new Promise(function(resolve, reject) 
+	return new Promise(function(resolve, reject)
 	{
 		if (lastTile)
 		{
-			lastTile.ontransitionend = function() 
+			lastTile.ontransitionend = function()
 			{
 				lastTile.ontransitionend = undefined;
 				resolve();
@@ -687,12 +703,12 @@ let baseNotChangedAni = 0;
 function animateBaseNotChanged()
 {
 	switch (baseNotChangedAni) {
-		case 0:
-			animateBaseNotChanged1();
-			break;
-		default:
-			animateBaseNotChanged2();
-			break;
+	case 0:
+		animateBaseNotChanged1();
+		break;
+	default:
+		animateBaseNotChanged2();
+		break;
 	}
 
 	baseNotChangedAni = (++baseNotChangedAni) % 2;
@@ -708,15 +724,15 @@ function animateBaseNotChanged1()
 
 			tile.style.transition = `transform 100ms linear 0ms`;
 			tile.style.transform = scaleSettings + " rotate(-20deg)";
-			setTimeout(function() 
+			setTimeout(function()
 			{
 				tile.style.transition = `transform 250ms ${easeInOutExpo} 0ms`;
 				tile.style.transform = scaleSettings + " rotate(20deg)";
-				setTimeout(function() 
+				setTimeout(function()
 				{
 					tile.style.transition = `transform 250ms ${easeOutBack} 0ms`;
 					tile.style.transform = scaleSettings;
-				} , 250);        
+				} , 250);
 			} , 100);
 		}
 }
@@ -734,13 +750,13 @@ function animateBaseNotChanged2()
 			let scaleX = (tileSize) / tile.offsetWidth;
 
 			tile.style.transition = `all 200ms linear 0ms,
-				transform 300ms ${easeInBack} ${delay}ms`; 
+				transform 300ms ${easeInBack} ${delay}ms`;
 
 			tile.style.transform = "scale(" + (scaleX / 2) + ")";
-			setTimeout(function() 
+			setTimeout(function()
 			{
 				tile.style.transition = `all 200ms linear 0ms,
-					transform 300ms ${easeOutBack} 0ms`, 
+					transform 300ms ${easeOutBack} 0ms`,
 
 				tile.style.transform = scaleSettings;
 			}, 300 + delay) ;
@@ -817,12 +833,14 @@ function animatePuzzleMatched()
 
 function interpolateColor(start, stop, T)
 {
+	/* eslint-disable no-multi-spaces*/
 	// let Alpha = ( start.alpha + ((stop.alpha   - start.alpha) * T));
 	let red   = Math.trunc( start.red   + ((stop.red     - start.red  ) * T));
 	let green = Math.trunc( start.green + ((stop.green   - start.green) * T));
 	let blue  = Math.trunc( start.blue  + ((stop.blue    - start.blue ) * T));
 	let result = {"red" : red, "green" : green, "blue" : blue};
 	return result;
+	/* eslint-enable */
 }
 
 
@@ -842,10 +860,10 @@ function animateGradient(target, startColor1, startColor2, stopColor1, stopColor
 
 	stopColor1 = colorIntToObj(stopColor1);
 	stopColor2 = colorIntToObj(stopColor2);
-	
+
 	let start = performance.now();
 
-	requestAnimationFrame(function animate(time) 
+	requestAnimationFrame(function animate(time)
 	{
 		let timeFraction = (time - start) / duration_ms;
 		if (timeFraction > 1) timeFraction = 1;
@@ -878,6 +896,7 @@ function setGradient(target, curColor1, curColor2)
 
 //-----------------------------   -----------------------------	-----------------------------
 
+// eslint-disable-next-line no-unused-vars
 function animatePrepPlaceTiles()
 {
 	animateNormalizeTilesColor();
@@ -888,7 +907,7 @@ function animatePrepPlaceTiles()
 
 let lastTapTime;
 
-panelClient.onmousedown = function(event) 
+panelClient.onmousedown = function(event)
 {
 	// console.log(Date.now() + " panelClient.onmousedown " + ` event.target ${event.target.className}` );	
 
@@ -897,7 +916,7 @@ panelClient.onmousedown = function(event)
 
 panelClient.ontouchstart = function(event) {
 	// console.log(Date.now() + " panelClient.ontouchstart " + ` event.target ${event.target.className}` );	
-	event.preventDefault(); 
+	event.preventDefault();
 	panelClientOnClick(event);
 }
 
@@ -907,16 +926,16 @@ function panelClientOnClick(event) {
 	let timeFromLastTap_ms = Date.now() - lastTapTime;
 
 	if ((lastTapTime) && (timeFromLastTap_ms < 300))
-	  showDebug();
+		showDebug();
 
 	lastTapTime = Date.now();
 }
 
-let panelClientVisible = false;
+let panelDebugVisible = false;
 
 function showDebug(el) {
-	panelClientVisible = ! panelClientVisible;
-	panelDebug.style.display = panelClientVisible ? "flex" : "none";
+	panelDebugVisible = ! panelDebugVisible;
+	panelDebug.style.display = panelDebugVisible ? "flex" : "none";
 	windowResize();
 }
 
